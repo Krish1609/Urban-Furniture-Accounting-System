@@ -41,16 +41,21 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    await login(loginId, password, role);
-    setLoading(false);
-    setStatusMessage({ type: 'success', text: `Welcome to FurniLedger! Signed in as ${role}.` });
-    setTimeout(() => {
-      if (role === 'Administrator') {
-        navigate('/dashboard');
-      } else {
-        navigate('/portal');
-      }
-    }, 600);
+    try {
+      await login(loginId, password, role);
+      setStatusMessage({ type: 'success', text: `Welcome to FurniLedger! Signed in as ${role}.` });
+      setTimeout(() => {
+        if (role === 'Administrator') {
+          navigate('/dashboard');
+        } else {
+          navigate('/portal');
+        }
+      }, 600);
+    } catch (error) {
+      setStatusMessage({ type: 'error', text: error.message || 'Unable to sign in.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

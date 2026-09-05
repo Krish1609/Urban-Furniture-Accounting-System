@@ -16,6 +16,12 @@ cd ..\backend
 npm install
 ```
 
+## Connect Supabase
+
+Copy `frontend/.env.example` to `frontend/.env` and fill in the Supabase project URL and publishable key from the Supabase dashboard under Project Settings > API. The SQL files in `supabase/migrations` must be applied to the same project before creating users.
+
+Never put a Supabase service-role key in the frontend. The publishable key is intended for browser use and database access is restricted by the project's row-level security policies.
+
 ## Run
 
 Open two terminals from the project root.

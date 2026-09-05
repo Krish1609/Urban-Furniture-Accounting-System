@@ -59,12 +59,17 @@ export default function CreateUserPage() {
     }
 
     setLoading(true);
-    await register({ name, loginId, email, role, password });
-    setLoading(false);
-    setStatusMessage({ type: 'success', text: `Account created for ${name}! Redirecting to Sign In...` });
-    setTimeout(() => {
-      navigate('/login');
-    }, 800);
+    try {
+      await register({ name, loginId, email, role, password });
+      setStatusMessage({ type: 'success', text: `Account created for ${name}! Redirecting to Sign In...` });
+      setTimeout(() => {
+        navigate('/login');
+      }, 800);
+    } catch (error) {
+      setStatusMessage({ type: 'error', text: error.message || 'Unable to create the account.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
