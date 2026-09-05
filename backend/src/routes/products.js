@@ -10,7 +10,7 @@ const router = Router();
 
 const PRODUCT_TYPES = ['goods', 'service', 'combo'];
 
-router.get('/products', requireAuth, async (req, res, next) => {
+router.get('/products', requireAuth, requireRole('admin', 'accountant'), async (req, res, next) => {
   try {
     const { organization_id: organizationId } = req.query;
     const products = await prisma.products.findMany({

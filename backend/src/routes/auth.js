@@ -75,7 +75,6 @@ const handleSignupOrRegister = async (req, res) => {
     displayName = display_name || name,
     organization_id,
     organizationId = organization_id,
-    role = 'accountant',
   } = req.body ?? {};
 
   if (!email || !password || !loginId || !displayName) {
@@ -98,13 +97,13 @@ const handleSignupOrRegister = async (req, res) => {
 
   const appUser = await createAuthAndAppUser({ email, password, loginId, displayName });
 
-  const assignedRole = USER_ROLES.includes(role?.toLowerCase()) ? role.toLowerCase() : 'accountant';
-
+  // Public self-service signup must never accept a caller-supplied role - admin/contact_portal
+  // accounts can only be created via the admin-only POST /create-user endpoint below.
   const membership = await prisma.organization_memberships.create({
     data: {
       organization_id: resolvedOrganizationId,
       user_id: appUser.id,
-      role: assignedRole,
+      role: 'accountant',
     },
   });
 

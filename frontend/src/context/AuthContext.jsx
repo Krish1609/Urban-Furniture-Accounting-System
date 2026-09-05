@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { isSupabaseConfigured, requireSupabase } from '../lib/supabase';
-import { getCurrentUser, signIn, signOut, signUp } from '../sevices/auth';
+import { getCurrentUser, signIn, signOut, signUp } from '../services/auth';
 
 const AuthContext = createContext();
 
@@ -60,30 +60,11 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (userData) => {
-<<<<<<< HEAD
-  const { data, error } = await supabase.auth.signUp({
-    email: userData.email,
-    password: userData.password,
-    options: {
-      data: {
-        login_id: userData.loginId,
-        display_name: userData.name,
-        role: userData.role,
-      },
-    },
-  });
-
-  if (error) throw error;
-
-  return data;
-};
-=======
     if (isSupabaseConfigured) {
       return signUp({ email: userData.email, password: userData.password, loginId: userData.loginId, displayName: userData.name });
     }
     return api.registerUser(userData);
   };
->>>>>>> cbd50c5f69547908430094811035b24537bcc465
 
   const logout = () => {
     if (isSupabaseConfigured) {

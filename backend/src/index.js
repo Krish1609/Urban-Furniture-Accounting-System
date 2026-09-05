@@ -3,7 +3,14 @@ import dotenv from 'dotenv';
 import express from 'express';
 import { prisma } from './lib/prisma.js';
 import authRouter from './routes/auth.js';
-import masterDataRouter from './routes/masterData.js';
+import contactsRouter from './routes/contacts.js';
+import productsRouter from './routes/products.js';
+import chartOfAccountsRouter from './routes/chartOfAccounts.js';
+import analyticAccountsRouter from './routes/analyticAccounts.js';
+import budgetsRouter from './routes/budgets.js';
+import purchasesRouter from './routes/purchases.js';
+import salesRouter from './routes/sales.js';
+import journalsRouter from './routes/journals.js';
 
 dotenv.config();
 
@@ -29,8 +36,14 @@ app.get('/api/md', (_request, response) => {
 });
 
 app.use('/api/auth', authRouter);
-app.use('/api', masterDataRouter);
-app.use('/api/master-data', masterDataRouter);
+app.use('/api/master-data', contactsRouter);
+app.use('/api/master-data', productsRouter);
+app.use('/api/master-data', chartOfAccountsRouter);
+app.use('/api', analyticAccountsRouter);
+app.use('/api', budgetsRouter);
+app.use('/api', purchasesRouter);
+app.use('/api', salesRouter);
+app.use('/api', journalsRouter);
 
 app.use((error, _request, response, _next) => {
   console.error(error);

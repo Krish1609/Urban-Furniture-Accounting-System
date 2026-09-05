@@ -10,7 +10,7 @@ const router = Router();
 
 const ACCOUNT_TYPES = ['asset', 'liability', 'equity', 'income', 'expense'];
 
-router.get('/chart-of-accounts', requireAuth, async (req, res, next) => {
+router.get('/chart-of-accounts', requireAuth, requireRole('admin', 'accountant'), async (req, res, next) => {
   try {
     const { organization_id: organizationId } = req.query;
     const accounts = await prisma.chart_of_accounts.findMany({
