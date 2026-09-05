@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import BudgetPieChart from '../components/BudgetPieChart';
 import Modal from '../components/Modal';
+import SearchBar from '../components/SearchBar';
 
 export default function BudgetsPage() {
   const { theme } = useTheme();
@@ -673,34 +674,13 @@ export default function BudgetsPage() {
             </button>
 
             {/* Middle: [Search] Input */}
-            <div style={{ flex: 1, maxWidth: '480px', position: 'relative' }}>
-              <Search
-                size={16}
-                style={{
-                  position: 'absolute',
-                  left: '0.85rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: theme.textDim,
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Search budgets..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.55rem 0.85rem 0.55rem 2.3rem',
-                  borderRadius: '6px',
-                  border: `1px solid ${theme.borderLight}`,
-                  backgroundColor: theme.bgInput,
-                  color: theme.textMain,
-                  fontSize: '0.86rem',
-                  outline: 'none',
-                }}
-              />
-            </div>
+            <SearchBar
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onClear={() => setSearchQuery('')}
+              placeholder="Search budgets..."
+              width="480px"
+            />
 
             {/* Right: [Back] Button & [List / Kanban] View Switchers */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
