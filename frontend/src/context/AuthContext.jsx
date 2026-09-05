@@ -40,19 +40,22 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (userData) => {
-    const { data, error } = await supabase.auth.signUp({
-      email: userData.email,
-      password: userData.password,
-      options: {
-        data: {
-          login_id: userData.loginId,
-          display_name: userData.name,
-        },
+  const { data, error } = await supabase.auth.signUp({
+    email: userData.email,
+    password: userData.password,
+    options: {
+      data: {
+        login_id: userData.loginId,
+        display_name: userData.name,
+        role: userData.role,
       },
-    });
-    if (error) throw error;
-    return data;
-  };
+    },
+  });
+
+  if (error) throw error;
+
+  return data;
+};
 
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
