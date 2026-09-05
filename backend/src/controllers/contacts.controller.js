@@ -133,9 +133,9 @@ export const createContact = async (req, res, next) => {
 export const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, type, email, mobile, city, state, pincode, status } = req.body;
+    const { name, type, email, mobile, phone, city, state, pincode, status, image, imageUrl } = req.body;
 
-    const contactType = type ? (type.toLowerCase() === 'vendor' ? 'vendor' : 'customer') : undefined;
+    const contactType = type ? (type.toLowerCase() === 'vendor' ? 'vendor' : type.toLowerCase() === 'both' ? 'both' : 'customer') : undefined;
     const isActive = status ? status === 'Active' : undefined;
 
     const updated = await prisma.contacts.update({
@@ -144,7 +144,8 @@ export const updateContact = async (req, res, next) => {
         display_name: name || undefined,
         contact_type: contactType,
         email: email !== undefined ? email : undefined,
-        phone: mobile !== undefined ? mobile : undefined,
+        phone: (mobile !== undefined || phone !== undefined) ? (mobile || phone) : undefined,
+        image_url: (image !== undefined || imageUrl !== undefined) ? (image || imageUrl || null) : undefined,
         is_active: isActive
       }
     });
@@ -168,7 +169,24 @@ export const updateContact = async (req, res, next) => {
       }
     }
 
-    res.json({ success: true, message: 'Contact updated successfully', data: updated });
+    res.json({
+      success: true,
+      message: 'Contact updated successfully',
+      data: {
+        id: updated.id,
+        name: updated.display_name,
+        type: updated.contact_type === 'customer' ? 'Customer' : updated.contact_type === 'vendor' ? 'Vendor' : 'Both',
+        email: updated.email || '',
+        mobile: updated.phone || '',
+        phone: updated.phone || '',
+        image: updated.image_url || '',
+        imageUrl: updated.image_url || '',
+        city: city || '',
+        state: state || '',
+        pincode: pincode || '',
+        status: updated.is_active ? 'Active' : 'Inactive'
+      }
+    });
   } catch (err) {
     next(err);
   }

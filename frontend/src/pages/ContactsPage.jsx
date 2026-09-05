@@ -472,13 +472,13 @@ export default function ContactsPage() {
               </div>
             </div>
 
-            {/* Right Column: Upload Image Box */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Right Column: Upload Avatar Box & Presets */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem' }}>
               <div
                 style={{
                   width: '100%',
-                  maxWidth: '260px',
-                  height: '240px',
+                  maxWidth: '280px',
+                  height: '200px',
                   border: `2px dashed ${theme.borderLight}`,
                   borderRadius: '12px',
                   backgroundColor: theme.bgSubtle,
@@ -486,10 +486,11 @@ export default function ContactsPage() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.65rem',
+                  gap: '0.5rem',
                   position: 'relative',
                   overflow: 'hidden',
                   cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
                 }}
               >
                 {formData.imageUrl ? (
@@ -502,8 +503,8 @@ export default function ContactsPage() {
                   <>
                     <div
                       style={{
-                        width: '56px',
-                        height: '56px',
+                        width: '50px',
+                        height: '50px',
                         borderRadius: '50%',
                         backgroundColor: theme.bgCard,
                         display: 'flex',
@@ -513,12 +514,12 @@ export default function ContactsPage() {
                         border: `1px solid ${theme.borderLight}`,
                       }}
                     >
-                      <Camera size={26} />
+                      <Camera size={22} />
                     </div>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: theme.textMain }}>
-                      Upload Image
+                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: theme.textMain }}>
+                      Upload Contact / Logo
                     </span>
-                    <span style={{ fontSize: '0.72rem', color: theme.textDim }}>PNG, JPG or SVG</span>
+                    <span style={{ fontSize: '0.7rem', color: theme.textDim }}>PNG, JPG or SVG</span>
                   </>
                 )}
                 <input
@@ -542,7 +543,6 @@ export default function ContactsPage() {
                   type="button"
                   onClick={() => setFormData({ ...formData, imageUrl: '' })}
                   style={{
-                    marginTop: '0.6rem',
                     background: 'none',
                     border: 'none',
                     color: theme.error,
@@ -551,9 +551,64 @@ export default function ContactsPage() {
                     fontWeight: 600,
                   }}
                 >
-                  Remove Image
+                  ✕ Remove Photo
                 </button>
               )}
+
+              {/* Or Paste Avatar URL */}
+              <div style={{ width: '100%', maxWidth: '280px' }}>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: theme.textDim, marginBottom: '0.3rem' }}>
+                  Or Paste Avatar URL:
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '0.45rem 0.65rem',
+                    borderRadius: '6px',
+                    border: `1px solid ${theme.borderLight}`,
+                    backgroundColor: theme.bgInput,
+                    color: theme.textMain,
+                    fontSize: '0.78rem',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+
+              {/* Quick Sample Avatar Presets */}
+              <div style={{ width: '100%', maxWidth: '280px' }}>
+                <span style={{ display: 'block', fontSize: '0.72rem', color: theme.textDim, marginBottom: '0.4rem', fontWeight: 600 }}>
+                  Quick Avatars:
+                </span>
+                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                  {[
+                    { label: '🏢 Corporate', url: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=500&auto=format&fit=crop&q=60' },
+                    { label: '👨‍💼 Executive', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=60' },
+                    { label: '👩‍💼 Architect', url: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=500&auto=format&fit=crop&q=60' },
+                    { label: '🏭 Supplier', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=60' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, imageUrl: preset.url })}
+                      style={{
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        border: `1px solid ${theme.borderLight}`,
+                        backgroundColor: theme.bgSubtle,
+                        color: theme.textMain,
+                        fontSize: '0.72rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </form>
         </div>

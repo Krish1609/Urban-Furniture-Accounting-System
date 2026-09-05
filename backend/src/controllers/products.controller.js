@@ -116,7 +116,7 @@ export const createProduct = async (req, res, next) => {
 export const updateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, type, category, salesPrice, costPrice, sku, is_active } = req.body;
+    const { name, type, category, salesPrice, costPrice, sku, is_active, image, imageUrl } = req.body;
 
     const orgId = req.organizationId || (await prisma.organizations.findFirst())?.id;
 
@@ -137,17 +137,33 @@ export const updateProduct = async (req, res, next) => {
       where: { id },
       data: {
         name: name || undefined,
-        product_type: type ? (type.toLowerCase() === 'service' ? 'service' : 'goods') : undefined,
+        product_type: type ? (type.toLowerCase() === 'service' ? 'service' : type.toLowerCase() === 'combo' ? 'combo' : 'goods') : undefined,
         category_id: categoryId,
         sales_price: salesPrice !== undefined ? Number(salesPrice) : undefined,
         cost_price: costPrice !== undefined ? Number(costPrice) : undefined,
+        image_url: (image !== undefined || imageUrl !== undefined) ? (image || imageUrl || null) : undefined,
         sku: sku || undefined,
         is_active: is_active !== undefined ? is_active : undefined
       },
       include: { product_categories: true }
     });
 
-    res.json({ success: true, message: 'Product updated successfully', data: updated });
+    res.json({
+      success: true,
+      message: 'Product updated successfully',
+      data: {
+        id: updated.id,
+        name: updated.name,
+        type: updated.product_type === 'service' ? 'Service' : updated.product_type === 'combo' ? 'Combo' : 'Goods',
+        category: updated.product_categories?.name || category,
+        salesPrice: Number(updated.sales_price),
+        costPrice: Number(updated.cost_price),
+        image: updated.image_url || '',
+        imageUrl: updated.image_url || '',
+        sku: updated.sku,
+        isActive: updated.is_active
+      }
+    });
   } catch (err) {
     next(err);
   }

@@ -160,6 +160,29 @@ export function AccountingProvider({ children }) {
     }
   };
 
+  const updateContact = async (id, updatedData) => {
+    setContacts((prev) =>
+      (prev || []).map((c) => (c.id === id ? { ...c, ...updatedData } : c))
+    );
+    try {
+      const res = await api.updateContact(id, updatedData);
+      if (res && res.data) {
+        setContacts((prev) => (prev || []).map((c) => (c.id === id ? { ...c, ...res.data } : c)));
+      }
+    } catch (e) {
+      console.error('Error updating contact:', e);
+    }
+  };
+
+  const deleteContact = async (id) => {
+    setContacts((prev) => (prev || []).filter((c) => c.id !== id));
+    try {
+      await api.deleteContact(id);
+    } catch (e) {
+      console.error('Error deleting contact:', e);
+    }
+  };
+
   const addProduct = async (newProduct) => {
     if (isSupabaseConfigured && currentUser?.id) {
       const product = { ...newProduct, sku: newProduct.sku || `SKU-${Math.floor(1000 + Math.random() * 9000)}` };
@@ -182,6 +205,29 @@ export function AccountingProvider({ children }) {
       }
     } catch (e) {
       console.error('Error adding product to backend:', e);
+    }
+  };
+
+  const updateProduct = async (id, updatedData) => {
+    setProducts((prev) =>
+      (prev || []).map((p) => (p.id === id ? { ...p, ...updatedData } : p))
+    );
+    try {
+      const res = await api.updateProduct(id, updatedData);
+      if (res && res.data) {
+        setProducts((prev) => (prev || []).map((p) => (p.id === id ? { ...p, ...res.data } : p)));
+      }
+    } catch (e) {
+      console.error('Error updating product:', e);
+    }
+  };
+
+  const deleteProduct = async (id) => {
+    setProducts((prev) => (prev || []).filter((p) => p.id !== id));
+    try {
+      await api.deleteProduct(id);
+    } catch (e) {
+      console.error('Error deleting product:', e);
     }
   };
 
@@ -749,7 +795,11 @@ export function AccountingProvider({ children }) {
         isBackendConnected,
         refreshData: loadData,
         addContact,
+        updateContact,
+        deleteContact,
         addProduct,
+        updateProduct,
+        deleteProduct,
         addOrder,
         convertPOToBill,
         convertSOToInvoice,
