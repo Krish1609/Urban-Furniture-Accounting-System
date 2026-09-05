@@ -1,8 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '../services/api';
-import { useAuth } from './AuthContext';
-import { isSupabaseConfigured } from '../lib/supabase';
-import { createContact, createProduct, loadAccountingData } from '../services/accounting';
 import {
   INITIAL_CHART_OF_ACCOUNTS,
   INITIAL_JOURNALS,
@@ -18,7 +15,6 @@ import {
 const AccountingContext = createContext();
 
 export function AccountingProvider({ children }) {
-  const { currentUser, isAuthenticated } = useAuth();
   const [contacts, setContacts] = useState(INITIAL_CONTACTS);
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [chartOfAccounts, setChartOfAccounts] = useState(INITIAL_CHART_OF_ACCOUNTS);
@@ -30,21 +26,6 @@ export function AccountingProvider({ children }) {
   const [analyticAccounts, setAnalyticAccounts] = useState(INITIAL_ANALYTIC_ACCOUNTS);
   const [loading, setLoading] = useState(true);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !isAuthenticated || !currentUser?.id) return undefined;
-    let mounted = true;
-    loadAccountingData(currentUser.id).then((data) => {
-      if (!mounted) return;
-      setContacts(data.contacts);
-      setProducts(data.products);
-      setChartOfAccounts(data.chartOfAccounts);
-      setJournals(data.journals);
-      setAnalyticAccounts(data.analyticAccounts);
-      setBudgets(data.budgets);
-    }).catch((error) => console.error('Supabase accounting load failed:', error));
-    return () => { mounted = false; };
-  }, [currentUser?.id, isAuthenticated]);
 
   // Fetch all data from live backend on load
   const loadData = useCallback(async () => {
@@ -134,12 +115,6 @@ export function AccountingProvider({ children }) {
 
   // Actions connected to Backend with optimistic updates
   const addContact = async (newContact) => {
-    if (isSupabaseConfigured && currentUser?.id) {
-      const savedContact = await createContact(currentUser.id, newContact);
-      setContacts((prev) => [{ ...newContact, id: savedContact.id, status: 'Active', totalBilled: 0, totalPaid: 0, dueAmount: 0 }, ...(prev || [])]);
-      return;
-    }
-
     const optimisticObj = {
       id: `cnt-${Date.now()}`,
       status: 'Active',
@@ -184,13 +159,6 @@ export function AccountingProvider({ children }) {
   };
 
   const addProduct = async (newProduct) => {
-    if (isSupabaseConfigured && currentUser?.id) {
-      const product = { ...newProduct, sku: newProduct.sku || `SKU-${Math.floor(1000 + Math.random() * 9000)}` };
-      const savedProduct = await createProduct(currentUser.id, product);
-      setProducts((prev) => [{ ...product, id: savedProduct.id }, ...(prev || [])]);
-      return;
-    }
-
     const optimisticObj = {
       id: `prod-${Date.now()}`,
       sku: `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
