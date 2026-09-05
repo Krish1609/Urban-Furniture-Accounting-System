@@ -30,26 +30,61 @@ export default function Navbar() {
   const location = useLocation();
   const navRef = useRef(null);
 
-  // Mega Menu State: opens on click as shown in flowchart
+  // Mega Menu State: opens automatically on hover or on click
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [highlightedCategory, setHighlightedCategory] = useState(null);
+  const hoverTimeoutRef = useRef(null);
 
   const currentRole = currentUser?.role || 'Administrator';
+
+  // Clear hover debounce timer
+  const clearHoverTimeout = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
+  // Hover into category (e.g. Sales, Purchase, Account, Report, Admin)
+  const handleMouseEnterCategory = (categoryId) => {
+    clearHoverTimeout();
+    setIsMegaMenuOpen(true);
+    setHighlightedCategory(categoryId);
+  };
+
+  // Hover out of nav or dropdown with smooth delay so user can move into dropdown easily
+  const handleMouseLeaveNav = () => {
+    clearHoverTimeout();
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsMegaMenuOpen(false);
+      setHighlightedCategory(null);
+    }, 220);
+  };
+
+  // Hover into dropdown container directly
+  const handleMouseEnterDropdown = () => {
+    clearHoverTimeout();
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (navRef.current && !navRef.current.contains(event.target)) {
+        clearHoverTimeout();
         setIsMegaMenuOpen(false);
         setHighlightedCategory(null);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      clearHoverTimeout();
+    };
   }, []);
 
   // Close dropdown on route change
   useEffect(() => {
+    clearHoverTimeout();
     setIsMegaMenuOpen(false);
     setHighlightedCategory(null);
   }, [location.pathname]);
@@ -60,6 +95,7 @@ export default function Navbar() {
   };
 
   const handleNavClick = (categoryId) => {
+    clearHoverTimeout();
     if (isMegaMenuOpen && highlightedCategory === categoryId) {
       setIsMegaMenuOpen(false);
       setHighlightedCategory(null);
@@ -143,9 +179,12 @@ export default function Navbar() {
           <Logo theme={theme} isSmall />
         </Link>
 
-        {/* Center: Top Navigation Bar (Sales | Purchase | Account | Report) */}
+        {/* Center: Top Navigation Bar (Sales | Purchase | Account | Report | Admin) */}
         {(currentRole === 'Administrator' || currentRole === 'Accountant') && (
-          <div style={{ position: 'relative' }}>
+          <div
+            style={{ position: 'relative' }}
+            onMouseLeave={handleMouseLeaveNav}
+          >
             <nav style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               {navCategories.map((cat) => {
                 const isActive = isMegaMenuOpen && highlightedCategory === cat.id;
@@ -155,6 +194,7 @@ export default function Navbar() {
                     key={cat.id}
                     type="button"
                     onClick={() => handleNavClick(cat.id)}
+                    onMouseEnter={() => handleMouseEnterCategory(cat.id)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -183,11 +223,17 @@ export default function Navbar() {
                 );
               })}
 
-              {/* All Modules Open-on-Click Quick Button */}
+              {/* All Modules Quick Button */}
               <button
                 type="button"
                 onClick={() => {
+                  clearHoverTimeout();
                   setIsMegaMenuOpen(!isMegaMenuOpen);
+                  setHighlightedCategory(null);
+                }}
+                onMouseEnter={() => {
+                  clearHoverTimeout();
+                  setIsMegaMenuOpen(true);
                   setHighlightedCategory(null);
                 }}
                 title="Open Navigation Menu"
@@ -212,12 +258,14 @@ export default function Navbar() {
               </button>
             </nav>
 
-            {/* FULL 4-COLUMN MEGA MATRIX NAVIGATION (Open on click - Right side box in diagram) */}
+            {/* FULL 4-COLUMN MEGA MATRIX NAVIGATION (Opens smoothly on hover or click) */}
             {isMegaMenuOpen && (
               <div
+                onMouseEnter={handleMouseEnterDropdown}
+                onMouseLeave={handleMouseLeaveNav}
                 style={{
                   position: 'absolute',
-                  top: 'calc(100% + 10px)',
+                  top: 'calc(100% + 8px)',
                   left: 0,
                   width: '820px',
                   maxWidth: '92vw',
@@ -238,6 +286,7 @@ export default function Navbar() {
                   return (
                     <div
                       key={col.id}
+                      onMouseEnter={() => setHighlightedCategory(col.id)}
                       style={{
                         display: 'flex',
                         flexDirection: 'column',
@@ -276,6 +325,7 @@ export default function Navbar() {
                               key={idx}
                               type="button"
                               onClick={() => {
+                                clearHoverTimeout();
                                 setIsMegaMenuOpen(false);
                                 setHighlightedCategory(null);
                                 navigate(item.path, { state: item.state });
