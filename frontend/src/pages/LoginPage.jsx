@@ -10,7 +10,6 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [role, setRole] = useState('Administrator'); // 'Administrator' | 'User'
   const [loginId, setLoginId] = useState('admin_demo');
   const [password, setPassword] = useState('Password@123');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,17 +18,6 @@ export default function LoginPage() {
   const [focusedField, setFocusedField] = useState(null);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
-
-  const handleRoleSwitch = (newRole) => {
-    setRole(newRole);
-    if (newRole === 'Administrator') {
-      setLoginId('admin_demo');
-      setPassword('Password@123');
-    } else {
-      setLoginId('nimesh_user');
-      setPassword('Password@123');
-    }
-  };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -42,15 +30,10 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const authenticatedUser = await login(loginId, password);
-      setStatusMessage({ type: 'success', text: 'Welcome to FurniLedger!' });
-      setTimeout(() => {
-        if (authenticatedUser.role === 'Administrator') {
-          navigate('/dashboard');
-        } else {
-          navigate('/portal');
-        }
-      }, 600);
+      const response = await login(loginId, password);
+      const userRole = response.user?.role;
+      setStatusMessage({ type: 'success', text: `Welcome to FurniLedger! Signed in as ${userRole}.` });
+      navigate(userRole === 'USER' ? '/my-invoices' : '/dashboard', { replace: true });
     } catch (error) {
       setStatusMessage({ type: 'error', text: error.message || 'Unable to sign in.' });
     } finally {
@@ -93,58 +76,6 @@ export default function LoginPage() {
           <p style={{ fontSize: '0.84rem', color: theme.textMuted }}>
             Access your furniture accounting portal
           </p>
-        </div>
-
-        {/* Role Toggle */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '1.2rem' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: theme.textDim }}>
-            Account Role
-          </span>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', backgroundColor: theme.bgSubtle, padding: '0.3rem', borderRadius: '6px', border: `1px solid ${theme.borderLight}` }}>
-            <button
-              type="button"
-              onClick={() => handleRoleSwitch('Administrator')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.45rem',
-                padding: '0.55rem 0.6rem',
-                borderRadius: '4px',
-                border: role === 'Administrator' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
-                backgroundColor: role === 'Administrator' ? theme.bgCard : 'transparent',
-                color: role === 'Administrator' ? theme.textMain : theme.textMuted,
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'Administrator' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'Administrator' ? theme.accentGold : 'transparent' }} />
-              <span>Administrator</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleRoleSwitch('User')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.45rem',
-                padding: '0.55rem 0.6rem',
-                borderRadius: '4px',
-                border: role === 'User' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
-                backgroundColor: role === 'User' ? theme.bgCard : 'transparent',
-                color: role === 'User' ? theme.textMain : theme.textMuted,
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'User' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'User' ? theme.accentGold : 'transparent' }} />
-              <span>User</span>
-            </button>
-          </div>
         </div>
 
         {statusMessage && (

@@ -13,7 +13,7 @@ export default function CreateUserPage() {
   const [name, setName] = useState('');
   const [loginId, setLoginId] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('User'); // 'User' | 'Administrator'
+  const [role, setRole] = useState('USER');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -223,10 +223,10 @@ export default function CreateUserPage() {
           {/* Role Radio Group */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.2rem' }}>
             <label style={{ fontSize: '0.8rem', fontWeight: 600, color: theme.textMain }}>Role</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', backgroundColor: theme.bgSubtle, padding: '0.3rem', borderRadius: '6px', border: `1px solid ${theme.borderLight}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', backgroundColor: theme.bgSubtle, padding: '0.3rem', borderRadius: '6px', border: `1px solid ${theme.borderLight}` }}>
               <button
                 type="button"
-                onClick={() => setRole('User')}
+                onClick={() => setRole('USER')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -234,21 +234,21 @@ export default function CreateUserPage() {
                   gap: '0.45rem',
                   padding: '0.55rem 0.6rem',
                   borderRadius: '4px',
-                  border: role === 'User' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
-                  backgroundColor: role === 'User' ? theme.bgCard : 'transparent',
-                  color: role === 'User' ? theme.textMain : theme.textMuted,
+                  border: role === 'USER' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                  backgroundColor: role === 'USER' ? theme.bgCard : 'transparent',
+                  color: role === 'USER' ? theme.textMain : theme.textMuted,
                   fontSize: '0.82rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'User' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'User' ? theme.accentGold : 'transparent' }} />
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'USER' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'USER' ? theme.accentGold : 'transparent' }} />
                 <span>User</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setRole('Administrator')}
+                onClick={() => setRole('ACCOUNTANT')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -256,16 +256,19 @@ export default function CreateUserPage() {
                   gap: '0.45rem',
                   padding: '0.55rem 0.6rem',
                   borderRadius: '4px',
-                  border: role === 'Administrator' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
-                  backgroundColor: role === 'Administrator' ? theme.bgCard : 'transparent',
-                  color: role === 'Administrator' ? theme.textMain : theme.textMuted,
+                  border: role === 'ACCOUNTANT' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                  backgroundColor: role === 'ACCOUNTANT' ? theme.bgCard : 'transparent',
+                  color: role === 'ACCOUNTANT' ? theme.textMain : theme.textMuted,
                   fontSize: '0.82rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'Administrator' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'Administrator' ? theme.accentGold : 'transparent' }} />
-                <span>Administrator</span>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'ACCOUNTANT' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'ACCOUNTANT' ? theme.accentGold : 'transparent' }} />
+                <span>Accountant</span>
+              </button>
+              <button type="button" onClick={() => setRole('ADMIN')} style={{ padding: '0.55rem 0.6rem', borderRadius: '4px', border: role === 'ADMIN' ? `1px solid ${theme.borderLight}` : '1px solid transparent', backgroundColor: role === 'ADMIN' ? theme.bgCard : 'transparent', color: role === 'ADMIN' ? theme.textMain : theme.textMuted, fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                Admin
               </button>
             </div>
           </div>

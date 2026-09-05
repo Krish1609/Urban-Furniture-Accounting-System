@@ -1,4 +1,3 @@
-import ProtectedRoute from './components/ProtectedRoute';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -18,6 +17,7 @@ import AccountingPage from './pages/AccountingPage';
 import BudgetsPage from './pages/BudgetsPage';
 import ReportsPage from './pages/ReportsPage';
 import UserPortalPage from './pages/UserPortalPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
   return (
@@ -27,25 +27,32 @@ export default function App() {
           <Router>
             <Routes>
               {/* Public Entry Workflows */}
-              <Route path="/create-user" element={<CreateUserPage />} />
               <Route path="/login" element={<LoginPage />} />
 
-              {/* Main Authenticated ERP & Portal Pages */}
-              <Route element={<ProtectedRoute />}>
+              <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ACCOUNTANT']} />}>
                 <Route element={<DashboardLayout />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/contacts" element={<ContactsPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/orders" element={<OrdersPage />} />
-                <Route path="/accounting" element={<AccountingPage />} />
-                <Route path="/budgets" element={<BudgetsPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="/portal" element={<UserPortalPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/contacts" element={<ContactsPage />} />
+                  <Route path="/products" element={<ProductsPage />} />
+                  <Route path="/orders" element={<OrdersPage />} />
+                  <Route path="/accounting" element={<AccountingPage />} />
+                  <Route path="/budgets" element={<BudgetsPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
                 </Route>
               </Route>
+              <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+                <Route path="/create-user" element={<CreateUserPage />} />
+              </Route>
+              <Route element={<ProtectedRoute allowedRoles={['USER']} />}>
+                <Route path="/my-invoices" element={<UserPortalPage view="invoices" />} />
+                <Route path="/my-bills" element={<UserPortalPage view="bills" />} />
+              </Route>
+
+              {/* Legacy portal URL is role guarded and redirected by the portal routes. */}
+              <Route path="/portal" element={<Navigate to="/my-invoices" replace />} />
 
               {/* Default Fallback */}
-              <Route path="/" element={<Navigate to="/create-user" replace />} />
+              <Route path="/" element={<Navigate to="/login" replace />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </Router>

@@ -266,7 +266,7 @@ router.post(
       // scopeToOwnContact only rewrites contact_id fields it finds in params/query/body; this
       // route identifies the invoice by :id, not by a contact_id the client supplies, so ownership
       // has to be checked explicitly against the invoice's own contact_id here.
-      if (req.user.role === 'contact_portal' && invoice.contact_id !== req.contactId) {
+      if (req.user.role === 'USER' && invoice.contact_id !== req.contactId) {
         return res.status(403).json({ error: 'Cannot pay an invoice belonging to another contact' });
       }
       if (!['posted', 'partially_paid'].includes(invoice.status)) {
@@ -288,13 +288,13 @@ router.post(
         return res.status(400).json({ error: 'payment_date must be a valid date' });
       }
 
-      // A contact_portal caller shouldn't get to name an arbitrary internal chart-of-accounts /
+      // A USER caller shouldn't get to name an arbitrary internal chart-of-accounts /
       // journal id, so a self-service payment always lands in a default Bank account/journal;
       // staff recording a payment on a customer's behalf choose the account explicitly (and it
       // must belong to the same organization as the invoice).
       let paymentAccountId = requestedPaymentAccountId;
       let journalId = requestedJournalId;
-      if (req.user.role === 'contact_portal') {
+      if (req.user.role === 'USER') {
         const bankAccount = await getOrCreateAccount(invoice.organization_id, 'Bank', 'asset');
         const bankJournal = await getOrCreateJournal(invoice.organization_id, 'Bank', 'bank');
         paymentAccountId = bankAccount.id;

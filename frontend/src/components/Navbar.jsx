@@ -23,7 +23,7 @@ import Logo from './Logo';
 
 export default function Navbar() {
   const { theme, themeMode, toggleTheme } = useTheme();
-  const { currentUser, switchRole, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const navRef = useRef(null);
@@ -45,16 +45,6 @@ export default function Navbar() {
   useEffect(() => {
     setActiveDropdown(null);
   }, [location.pathname]);
-
-  const handleRoleToggle = () => {
-    const nextRole = currentUser.role === 'Administrator' ? 'User' : 'Administrator';
-    switchRole(nextRole);
-    if (nextRole === 'User') {
-      navigate('/portal');
-    } else {
-      navigate('/dashboard');
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -127,12 +117,12 @@ export default function Navbar() {
     >
       {/* Left: Brand Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
-        <Link to={currentUser.role === 'Administrator' ? '/dashboard' : '/portal'} style={{ textDecoration: 'none' }}>
+        <Link to={currentUser?.role === 'USER' ? '/my-invoices' : '/dashboard'} style={{ textDecoration: 'none' }}>
           <Logo theme={theme} isSmall />
         </Link>
 
         {/* Center: Top Navigation Bar Formatted as requested (Sales | Purchase | Account | Report) */}
-        {currentUser.role === 'Administrator' && (
+        {['ADMIN', 'ACCOUNTANT'].includes(currentUser?.role) && (
           <nav style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', position: 'relative' }}>
             {navMenus.map((menu) => {
               const isOpen = activeDropdown === menu.id;
@@ -254,10 +244,8 @@ export default function Navbar() {
       {/* Right Controls: Role, Theme, Logout */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
         {/* Role Switcher Pill */}
-        <button
-          type="button"
-          onClick={handleRoleToggle}
-          title="Click to toggle role perspective"
+        <div
+          title="Authenticated role"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -269,12 +257,12 @@ export default function Navbar() {
             fontSize: '0.78rem',
             fontWeight: 600,
             color: theme.accentGold,
-            cursor: 'pointer',
+            cursor: 'default',
           }}
         >
-          {currentUser.role === 'Administrator' ? <ShieldCheck size={14} /> : <UserIcon size={14} />}
-          <span>Role: {currentUser.role}</span>
-        </button>
+            {currentUser?.role === 'ADMIN' ? <ShieldCheck size={14} /> : <UserIcon size={14} />}
+            <span>Role: {currentUser?.role}</span>
+          </div>
 
         {/* Theme Toggle */}
         <button
