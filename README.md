@@ -22,12 +22,12 @@ Open two terminals from the project root.
 
 ```powershell
 cd backend
-npm run dev
+npm run dev  OR  npm start
 ```
 
 ```powershell
 cd frontend
-npm run dev
+npm run dev  OR  npm start
 ```
 
-Then open http://localhost:5173. The page checks the backend at `/api/health` through the Vite development proxy.
+Then open http://localhost:5173. The page checks the backend at `/api/md` through the Vite development proxy.

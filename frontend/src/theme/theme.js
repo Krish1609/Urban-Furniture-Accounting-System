@@ -1,0 +1,42 @@
+// Kleanity Minimalist Design Theme Tokens in Pure JavaScript
+
+export const THEMES = {
+  dark: {
+    bgApp: '#0E0D0C',
+    bgCard: '#161513',
+    bgSubtle: '#1F1D1A',
+    bgInput: '#121110',
+    textMain: '#F5F2EB',
+    textMuted: '#ABA59C',
+    textDim: '#706B64',
+    borderLight: '#2C2925',
+    borderFocus: '#D1B492',
+    accentGold: '#CBB08F',
+    accentGoldHover: '#DEC4A6',
+    accentGoldSoft: '#24201A',
+    success: '#81C784',
+    successBg: '#132415',
+    error: '#E57373',
+    errorBg: '#2B1414',
+    shadow: '0 16px 40px rgba(0, 0, 0, 0.45)',
+  },
+  light: {
+    bgApp: '#F8F6F2',
+    bgCard: '#FFFFFF',
+    bgSubtle: '#F4F0E9',
+    bgInput: '#FCFBFA',
+    textMain: '#181715',
+    textMuted: '#6E6B66',
+    textDim: '#99948D',
+    borderLight: '#E5DFD5',
+    borderFocus: '#BFA07C',
+    accentGold: '#BFA07C',
+    accentGoldHover: '#AB8C67',
+    accentGoldSoft: '#F6F1EA',
+    success: '#2E7D32',
+    successBg: '#EDF7ED',
+    error: '#D32F2F',
+    errorBg: '#FDEDED',
+    shadow: '0 12px 30px rgba(0, 0, 0, 0.05)',
+  }
+};
