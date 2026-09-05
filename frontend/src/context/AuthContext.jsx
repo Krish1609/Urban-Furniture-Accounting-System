@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(
     isSupabaseConfigured
       ? null
-      : { name: 'Admin User', loginId: 'admin_demo', email: 'admin@urbanfurniture.com', role: 'Administrator' }
+      : { name: 'Admin User', loginId: 'admin_demo', email: 'admin@urbanfurniture.com', role: 'Administrator' },
   );
   const [isAuthenticated, setIsAuthenticated] = useState(!isSupabaseConfigured);
 
@@ -61,7 +61,13 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     if (isSupabaseConfigured) {
-      return signUp({ email: userData.email, password: userData.password, loginId: userData.loginId, displayName: userData.name });
+      return signUp({
+        email: userData.email,
+        password: userData.password,
+        loginId: userData.loginId,
+        displayName: userData.name,
+        role: userData.role,
+      });
     }
     return api.registerUser(userData);
   };

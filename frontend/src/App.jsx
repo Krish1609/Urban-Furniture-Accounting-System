@@ -1,3 +1,4 @@
+import ProtectedRoute from './components/ProtectedRoute';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
