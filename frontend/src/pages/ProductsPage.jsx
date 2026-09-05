@@ -453,13 +453,13 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* Right Column: Upload Image Box */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Right Column: Upload Image Box & Presets */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem' }}>
               <div
                 style={{
                   width: '100%',
-                  maxWidth: '260px',
-                  height: '240px',
+                  maxWidth: '280px',
+                  height: '200px',
                   border: `2px dashed ${theme.borderLight}`,
                   borderRadius: '12px',
                   backgroundColor: theme.bgSubtle,
@@ -467,10 +467,11 @@ export default function ProductsPage() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.65rem',
+                  gap: '0.5rem',
                   position: 'relative',
                   overflow: 'hidden',
                   cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
                 }}
               >
                 {formData.imageUrl ? (
@@ -483,8 +484,8 @@ export default function ProductsPage() {
                   <>
                     <div
                       style={{
-                        width: '56px',
-                        height: '56px',
+                        width: '50px',
+                        height: '50px',
                         borderRadius: '50%',
                         backgroundColor: theme.bgCard,
                         display: 'flex',
@@ -494,12 +495,12 @@ export default function ProductsPage() {
                         border: `1px solid ${theme.borderLight}`,
                       }}
                     >
-                      <Camera size={26} />
+                      <Camera size={22} />
                     </div>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: theme.textMain }}>
-                      Upload Image
+                    <span style={{ fontSize: '0.82rem', fontWeight: 600, color: theme.textMain }}>
+                      Upload Product Photo
                     </span>
-                    <span style={{ fontSize: '0.72rem', color: theme.textDim }}>PNG, JPG or WebP</span>
+                    <span style={{ fontSize: '0.7rem', color: theme.textDim }}>PNG, JPG or WebP</span>
                   </>
                 )}
                 <input
@@ -523,7 +524,6 @@ export default function ProductsPage() {
                   type="button"
                   onClick={() => setFormData({ ...formData, imageUrl: '' })}
                   style={{
-                    marginTop: '0.6rem',
                     background: 'none',
                     border: 'none',
                     color: theme.error,
@@ -532,9 +532,64 @@ export default function ProductsPage() {
                     fontWeight: 600,
                   }}
                 >
-                  Remove Image
+                  ✕ Remove Image
                 </button>
               )}
+
+              {/* Or Paste Image URL */}
+              <div style={{ width: '100%', maxWidth: '280px' }}>
+                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 600, color: theme.textDim, marginBottom: '0.3rem' }}>
+                  Or Paste Image URL:
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '0.45rem 0.65rem',
+                    borderRadius: '6px',
+                    border: `1px solid ${theme.borderLight}`,
+                    backgroundColor: theme.bgInput,
+                    color: theme.textMain,
+                    fontSize: '0.78rem',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+
+              {/* Quick Sample Furniture Presets */}
+              <div style={{ width: '100%', maxWidth: '280px' }}>
+                <span style={{ display: 'block', fontSize: '0.72rem', color: theme.textDim, marginBottom: '0.4rem', fontWeight: 600 }}>
+                  Quick Presets:
+                </span>
+                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                  {[
+                    { label: '🪑 Chair', url: 'https://images.unsplash.com/photo-1580481077197-28562391696b?w=500&auto=format&fit=crop&q=60' },
+                    { label: '🪵 Table', url: 'https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?w=500&auto=format&fit=crop&q=60' },
+                    { label: '🛋️ Sofa', url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=60' },
+                    { label: '🖥️ Desk', url: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=500&auto=format&fit=crop&q=60' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, imageUrl: preset.url })}
+                      style={{
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        border: `1px solid ${theme.borderLight}`,
+                        backgroundColor: theme.bgSubtle,
+                        color: theme.textMain,
+                        fontSize: '0.72rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </form>
         </div>

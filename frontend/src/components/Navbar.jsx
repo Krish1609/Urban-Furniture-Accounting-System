@@ -16,8 +16,7 @@ import {
   BookOpen,
   DollarSign,
   TrendingUp,
-  LayoutGrid,
-  ArrowRight
+  LayoutGrid
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -30,28 +29,54 @@ export default function Navbar() {
   const location = useLocation();
   const navRef = useRef(null);
 
-  // Mega Menu State: opens on click as shown in flowchart
-  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
-  const [highlightedCategory, setHighlightedCategory] = useState(null);
+  // Active Category Dropdown state ('sales' | 'purchase' | 'account' | 'report' | 'admin' | 'all' | null)
+  // Only the hovered/clicked category's dropdown will open
+  const [activeCategory, setActiveCategory] = useState(null);
+  const hoverTimeoutRef = useRef(null);
 
   const currentRole = currentUser?.role || 'Administrator';
+
+  // Clear hover debounce timer
+  const clearHoverTimeout = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+  };
+
+  // Hover onto a specific category (opens ONLY that category's dropdown)
+  const handleMouseEnterCategory = (categoryId) => {
+    clearHoverTimeout();
+    setActiveCategory(categoryId);
+  };
+
+  // Hover out of nav or dropdown with smooth delay
+  const handleMouseLeaveNav = () => {
+    clearHoverTimeout();
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveCategory(null);
+    }, 220);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (navRef.current && !navRef.current.contains(event.target)) {
-        setIsMegaMenuOpen(false);
-        setHighlightedCategory(null);
+        clearHoverTimeout();
+        setActiveCategory(null);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      clearHoverTimeout();
+    };
   }, []);
 
   // Close dropdown on route change
   useEffect(() => {
-    setIsMegaMenuOpen(false);
-    setHighlightedCategory(null);
+    clearHoverTimeout();
+    setActiveCategory(null);
   }, [location.pathname]);
 
   const handleLogout = () => {
@@ -60,12 +85,11 @@ export default function Navbar() {
   };
 
   const handleNavClick = (categoryId) => {
-    if (isMegaMenuOpen && highlightedCategory === categoryId) {
-      setIsMegaMenuOpen(false);
-      setHighlightedCategory(null);
+    clearHoverTimeout();
+    if (activeCategory === categoryId) {
+      setActiveCategory(null);
     } else {
-      setIsMegaMenuOpen(true);
-      setHighlightedCategory(categoryId);
+      setActiveCategory(categoryId);
     }
   };
 
@@ -143,16 +167,24 @@ export default function Navbar() {
           <Logo theme={theme} isSmall />
         </Link>
 
-        {/* Center: Top Navigation Bar (Sales | Purchase | Account | Report) */}
+        {/* Center: Top Navigation Bar - Individual Hover Dropdowns */}
         {(currentRole === 'Administrator' || currentRole === 'Accountant') && (
-          <div style={{ position: 'relative' }}>
-            <nav style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              {navCategories.map((cat) => {
-                const isActive = isMegaMenuOpen && highlightedCategory === cat.id;
+          <nav
+            onMouseLeave={handleMouseLeaveNav}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', position: 'relative' }}
+          >
+            {navCategories.map((cat) => {
+              const isOpen = activeCategory === cat.id;
 
-                return (
+              return (
+                <div
+                  key={cat.id}
+                  style={{ position: 'relative' }}
+                  onMouseEnter={() => handleMouseEnterCategory(cat.id)}
+                  onMouseLeave={handleMouseLeaveNav}
+                >
+                  {/* Category Trigger Button */}
                   <button
-                    key={cat.id}
                     type="button"
                     onClick={() => handleNavClick(cat.id)}
                     style={{
@@ -163,9 +195,9 @@ export default function Navbar() {
                       borderRadius: '6px',
                       fontSize: '0.86rem',
                       fontWeight: 600,
-                      backgroundColor: isActive ? theme.bgSubtle : 'transparent',
-                      color: isActive ? theme.accentGold : theme.textMain,
-                      border: isActive ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                      backgroundColor: isOpen ? theme.bgSubtle : 'transparent',
+                      color: isOpen ? theme.accentGold : theme.textMain,
+                      border: isOpen ? `1px solid ${theme.borderLight}` : '1px solid transparent',
                       cursor: 'pointer',
                       transition: 'all 120ms ease',
                     }}
@@ -174,23 +206,115 @@ export default function Navbar() {
                     <ChevronDown
                       size={14}
                       style={{
-                        transform: isActive ? 'rotate(180deg)' : 'rotate(0)',
+                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
                         transition: 'transform 180ms ease',
-                        color: isActive ? theme.accentGold : theme.textMuted,
+                        color: isOpen ? theme.accentGold : theme.textMuted,
                       }}
                     />
                   </button>
-                );
-              })}
 
-              {/* All Modules Open-on-Click Quick Button */}
+                  {/* ONLY THIS CATEGORY'S INDIVIDUAL DROPDOWN OPENS */}
+                  {isOpen && (
+                    <div
+                      onMouseEnter={clearHoverTimeout}
+                      onMouseLeave={handleMouseLeaveNav}
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 6px)',
+                        left: 0,
+                        minWidth: cat.id === 'account' ? '250px' : '230px',
+                        backgroundColor: theme.bgCard,
+                        border: `1px solid ${theme.borderLight}`,
+                        borderRadius: '10px',
+                        padding: '0.55rem',
+                        boxShadow: '0 14px 35px rgba(0, 0, 0, 0.35)',
+                        zIndex: 250,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.2rem',
+                      }}
+                    >
+                      {/* Dropdown Header */}
+                      <div
+                        style={{
+                          padding: '0.35rem 0.6rem 0.45rem',
+                          borderBottom: `1px solid ${theme.borderLight}`,
+                          marginBottom: '0.3rem',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.06em',
+                          color: theme.accentGold,
+                          fontFamily: "'Lora', Georgia, serif",
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <span>{cat.label}</span>
+                        <span style={{ fontSize: '0.7rem', color: theme.textMuted, fontWeight: 500, textTransform: 'none' }}>
+                          {cat.items.length} options
+                        </span>
+                      </div>
+
+                      {/* Dropdown Items */}
+                      {cat.items.map((item, idx) => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              clearHoverTimeout();
+                              setActiveCategory(null);
+                              navigate(item.path, { state: item.state });
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.65rem',
+                              padding: '0.52rem 0.75rem',
+                              borderRadius: '6px',
+                              fontSize: '0.84rem',
+                              fontWeight: 500,
+                              color: theme.textMain,
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                              width: '100%',
+                              transition: 'all 100ms ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = theme.bgSubtle;
+                              e.currentTarget.style.color = theme.accentGold;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                              e.currentTarget.style.color = theme.textMain;
+                            }}
+                          >
+                            <Icon size={15} style={{ color: theme.accentGold, flexShrink: 0 }} />
+                            <span>{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* All Modules Quick Button & Full Overview Dropdown */}
+            <div
+              style={{ position: 'relative' }}
+              onMouseEnter={() => handleMouseEnterCategory('all')}
+              onMouseLeave={handleMouseLeaveNav}
+            >
               <button
                 type="button"
-                onClick={() => {
-                  setIsMegaMenuOpen(!isMegaMenuOpen);
-                  setHighlightedCategory(null);
-                }}
-                title="Open Navigation Menu"
+                onClick={() => handleNavClick('all')}
+                title="Open All Modules Overview"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -199,75 +323,56 @@ export default function Navbar() {
                   borderRadius: '6px',
                   fontSize: '0.78rem',
                   fontWeight: 600,
-                  backgroundColor: isMegaMenuOpen && !highlightedCategory ? theme.accentGoldSoft : 'transparent',
-                  color: isMegaMenuOpen && !highlightedCategory ? theme.accentGold : theme.textMuted,
-                  border: `1px solid ${isMegaMenuOpen && !highlightedCategory ? theme.accentGold : theme.borderLight}`,
+                  backgroundColor: activeCategory === 'all' ? theme.accentGoldSoft : 'transparent',
+                  color: activeCategory === 'all' ? theme.accentGold : theme.textMuted,
+                  border: `1px solid ${activeCategory === 'all' ? theme.accentGold : theme.borderLight}`,
                   cursor: 'pointer',
-                  marginLeft: '0.5rem',
+                  marginLeft: '0.35rem',
                   transition: 'all 120ms ease',
                 }}
               >
                 <LayoutGrid size={14} />
                 <span>All Modules</span>
               </button>
-            </nav>
 
-            {/* FULL 4-COLUMN MEGA MATRIX NAVIGATION (Open on click - Right side box in diagram) */}
-            {isMegaMenuOpen && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 'calc(100% + 10px)',
-                  left: 0,
-                  width: '820px',
-                  maxWidth: '92vw',
-                  backgroundColor: theme.bgCard,
-                  border: `1px solid ${theme.borderLight}`,
-                  borderRadius: '12px',
-                  padding: '1.4rem 1.6rem',
-                  boxShadow: '0 18px 45px rgba(0, 0, 0, 0.45)',
-                  zIndex: 200,
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '1.4rem',
-                }}
-              >
-                {navCategories.map((col) => {
-                  const isColHighlighted = highlightedCategory === col.id;
-
-                  return (
-                    <div
-                      key={col.id}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.4rem',
-                        padding: '0.6rem 0.75rem',
-                        borderRadius: '8px',
-                        backgroundColor: isColHighlighted ? theme.bgSubtle : 'transparent',
-                        border: isColHighlighted ? `1px solid ${theme.borderLight}` : '1px solid transparent',
-                        transition: 'all 140ms ease',
-                      }}
-                    >
-                      {/* Column Header */}
+              {/* Mega Matrix (Only when hovering/clicking 'All Modules') */}
+              {activeCategory === 'all' && (
+                <div
+                  onMouseEnter={clearHoverTimeout}
+                  onMouseLeave={handleMouseLeaveNav}
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    right: 0,
+                    width: '800px',
+                    maxWidth: '90vw',
+                    backgroundColor: theme.bgCard,
+                    border: `1px solid ${theme.borderLight}`,
+                    borderRadius: '12px',
+                    padding: '1.2rem 1.4rem',
+                    boxShadow: '0 18px 45px rgba(0, 0, 0, 0.45)',
+                    zIndex: 250,
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    gap: '1.2rem',
+                  }}
+                >
+                  {navCategories.map((col) => (
+                    <div key={col.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                       <div
                         style={{
-                          paddingBottom: '0.45rem',
-                          marginBottom: '0.35rem',
-                          borderBottom: `2px solid ${isColHighlighted ? theme.accentGold : theme.borderLight}`,
-                          fontSize: '0.95rem',
+                          paddingBottom: '0.4rem',
+                          marginBottom: '0.25rem',
+                          borderBottom: `2px solid ${theme.accentGold}`,
+                          fontSize: '0.9rem',
                           fontWeight: 700,
-                          color: isColHighlighted ? theme.accentGold : theme.textMain,
+                          color: theme.accentGold,
                           fontFamily: "'Lora', Georgia, serif",
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
                         }}
                       >
-                        <span>{col.label}</span>
+                        {col.label}
                       </div>
 
-                      {/* Column Items */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
                         {col.items.map((item, idx) => {
                           const Icon = item.icon;
@@ -276,17 +381,17 @@ export default function Navbar() {
                               key={idx}
                               type="button"
                               onClick={() => {
-                                setIsMegaMenuOpen(false);
-                                setHighlightedCategory(null);
+                                clearHoverTimeout();
+                                setActiveCategory(null);
                                 navigate(item.path, { state: item.state });
                               }}
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '0.55rem',
-                                padding: '0.48rem 0.55rem',
+                                gap: '0.5rem',
+                                padding: '0.45rem 0.5rem',
                                 borderRadius: '5px',
-                                fontSize: '0.82rem',
+                                fontSize: '0.8rem',
                                 fontWeight: 500,
                                 color: theme.textMain,
                                 backgroundColor: 'transparent',
@@ -312,11 +417,11 @@ export default function Navbar() {
                         })}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
         )}
 
         {/* User Portal Link for Regular Users */}

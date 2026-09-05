@@ -74,12 +74,14 @@ export const createContact = async (req, res, next) => {
 
     const contactType = type.toLowerCase() === 'vendor' ? 'vendor' : type.toLowerCase() === 'both' ? 'both' : 'customer';
 
+    const cleanEmail = email ? email.trim().toLowerCase() : null;
+
     const newContact = await prisma.contacts.create({
       data: {
         organization_id: orgId,
         display_name: name,
         contact_type: contactType,
-        email: email || null,
+        email: cleanEmail,
         phone: mobile || phone || null,
         image_url: image || imageUrl || null,
         is_active: true
@@ -133,18 +135,20 @@ export const createContact = async (req, res, next) => {
 export const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, type, email, mobile, city, state, pincode, status } = req.body;
+    const { name, type, email, mobile, phone, city, state, pincode, status, image, imageUrl } = req.body;
 
-    const contactType = type ? (type.toLowerCase() === 'vendor' ? 'vendor' : 'customer') : undefined;
+    const contactType = type ? (type.toLowerCase() === 'vendor' ? 'vendor' : type.toLowerCase() === 'both' ? 'both' : 'customer') : undefined;
     const isActive = status ? status === 'Active' : undefined;
+    const cleanEmail = email !== undefined ? (email ? email.trim().toLowerCase() : null) : undefined;
 
     const updated = await prisma.contacts.update({
       where: { id },
       data: {
         display_name: name || undefined,
         contact_type: contactType,
-        email: email !== undefined ? email : undefined,
-        phone: mobile !== undefined ? mobile : undefined,
+        email: cleanEmail,
+        phone: (mobile !== undefined || phone !== undefined) ? (mobile || phone) : undefined,
+        image_url: (image !== undefined || imageUrl !== undefined) ? (image || imageUrl || null) : undefined,
         is_active: isActive
       }
     });
@@ -168,7 +172,24 @@ export const updateContact = async (req, res, next) => {
       }
     }
 
-    res.json({ success: true, message: 'Contact updated successfully', data: updated });
+    res.json({
+      success: true,
+      message: 'Contact updated successfully',
+      data: {
+        id: updated.id,
+        name: updated.display_name,
+        type: updated.contact_type === 'customer' ? 'Customer' : updated.contact_type === 'vendor' ? 'Vendor' : 'Both',
+        email: updated.email || '',
+        mobile: updated.phone || '',
+        phone: updated.phone || '',
+        image: updated.image_url || '',
+        imageUrl: updated.image_url || '',
+        city: city || '',
+        state: state || '',
+        pincode: pincode || '',
+        status: updated.is_active ? 'Active' : 'Inactive'
+      }
+    });
   } catch (err) {
     next(err);
   }
