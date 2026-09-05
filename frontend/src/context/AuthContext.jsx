@@ -1,10 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '../services/api';
+import { isSupabaseConfigured, requireSupabase } from '../lib/supabase';
+import { getCurrentUser, signIn, signOut, signUp } from '../services/auth';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
+    if (isSupabaseConfigured) return null;
     try {
       const saved = localStorage.getItem('furniledger_user');
       if (saved) return JSON.parse(saved);
@@ -15,13 +18,25 @@ export function AuthProvider({ children }) {
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return Boolean(localStorage.getItem('furniledger_token') && localStorage.getItem('furniledger_user'));
+    return isSupabaseConfigured || Boolean(localStorage.getItem('furniledger_token') && localStorage.getItem('furniledger_user'));
   });
 
   const [loading, setLoading] = useState(true);
 
   // Verify auth session on load
   useEffect(() => {
+    if (isSupabaseConfigured) {
+      const supabase = requireSupabase();
+      getCurrentUser().then((user) => {
+        if (!user) return;
+        setCurrentUser({ id: user.id, name: user.user_metadata?.display_name || user.email, loginId: user.user_metadata?.login_id || user.email, email: user.email, role: 'Administrator' });
+        setIsAuthenticated(true);
+        setLoading(false);
+      }).catch(() => setLoading(false));
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setIsAuthenticated(Boolean(session?.user)));
+      return () => listener.subscription.unsubscribe();
+    }
+
     let mounted = true;
     const token = localStorage.getItem('furniledger_token');
     if (token) {
@@ -57,6 +72,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (loginId, password, role = 'Administrator') => {
+    if (isSupabaseConfigured) {
+      const res = await signIn(loginId, password);
+      const user = res.user;
+      const profile = { id: user.id, name: user.user_metadata?.display_name || user.email, role, loginId: user.user_metadata?.login_id || loginId, email: user.email };
+      setCurrentUser(profile);
+      setIsAuthenticated(true);
+      setLoading(false);
+      return { user: profile };
+    }
+
     const res = await api.loginUser({ loginId, password, role });
     if (res && res.user) {
       const u = {
@@ -78,11 +103,17 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (userData) => {
+    if (isSupabaseConfigured) {
+      return signUp({ email: userData.email, password: userData.password, loginId: userData.loginId, displayName: userData.name });
+    }
     const res = await api.registerUser(userData);
     return res;
   };
 
   const logout = () => {
+    if (isSupabaseConfigured) {
+      signOut().catch((error) => console.error('Supabase sign out failed:', error));
+    }
     localStorage.removeItem('furniledger_token');
     localStorage.removeItem('furniledger_user');
     setCurrentUser(null);
