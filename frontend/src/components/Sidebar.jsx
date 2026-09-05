@@ -30,7 +30,7 @@ export default function Sidebar() {
     { to: '/portal', label: 'My Invoices & Dues', icon: Receipt },
   ];
 
-  const links = currentUser.role === 'Administrator' ? adminNavLinks : userNavLinks;
+  const links = ['ADMIN', 'ACCOUNTANT'].includes(currentUser?.role) ? adminNavLinks : userNavLinks;
 
   return (
     <aside

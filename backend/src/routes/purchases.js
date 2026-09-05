@@ -14,7 +14,7 @@ import {
   checkBudgetForLines,
 } from '../lib/commercialDocuments.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
-import { postVendorBillEntry, postVendorPaymentEntry } from '../services/accounting.js';
+import { getOrCreateAccount, getOrCreateJournal, postVendorBillEntry, postVendorPaymentEntry } from '../services/accounting.js';
 
 const router = Router();
 
@@ -246,11 +246,14 @@ router.get('/my-bills', requireAuth, requireRole('contact_portal'), async (req, 
   }
 });
 
-router.post('/vendor-bills/:id/pay', requireAuth, requireRole('admin', 'accountant'), async (req, res, next) => {
+router.post('/vendor-bills/:id/pay', requireAuth, requireRole('admin', 'accountant', 'contact_portal'), async (req, res, next) => {
   try {
     const bill = await prisma.commercial_documents.findUnique({ where: { id: req.params.id } });
     if (!bill || bill.document_type !== 'vendor_bill') {
       return res.status(404).json({ error: 'Vendor bill not found' });
+    }
+    if (req.user.role === 'USER' && bill.contact_id !== req.user.contact_id) {
+      return res.status(403).json({ error: 'Cannot pay a vendor bill belonging to another contact' });
     }
     if (!['posted', 'partially_paid'].includes(bill.status)) {
       return res.status(400).json({ error: `Cannot pay a vendor bill with status ${bill.status}` });
@@ -270,17 +273,26 @@ router.post('/vendor-bills/:id/pay', requireAuth, requireRole('admin', 'accounta
     if (!paymentDate || Number.isNaN(new Date(paymentDate).getTime())) {
       return res.status(400).json({ error: 'payment_date must be a valid date' });
     }
-    if (!paymentAccountId) return res.status(400).json({ error: 'payment_account_id is required' });
-    if (!journalId) return res.status(400).json({ error: 'journal_id is required' });
+    let resolvedPaymentAccountId = paymentAccountId;
+    let resolvedJournalId = journalId;
+    if (req.user.role === 'USER') {
+      const bankAccount = await getOrCreateAccount(bill.organization_id, 'Bank', 'asset');
+      const bankJournal = await getOrCreateJournal(bill.organization_id, 'Bank', 'bank');
+      resolvedPaymentAccountId = bankAccount.id;
+      resolvedJournalId = bankJournal.id;
+    } else {
+      if (!resolvedPaymentAccountId) return res.status(400).json({ error: 'payment_account_id is required' });
+      if (!resolvedJournalId) return res.status(400).json({ error: 'journal_id is required' });
+    }
 
     const paymentAccount = await prisma.chart_of_accounts.findFirst({
-      where: { id: paymentAccountId, organization_id: bill.organization_id },
+      where: { id: resolvedPaymentAccountId, organization_id: bill.organization_id },
       select: { id: true },
     });
     if (!paymentAccount) return res.status(400).json({ error: 'payment_account_id does not belong to organization_id' });
 
     const journal = await prisma.journals.findFirst({
-      where: { id: journalId, organization_id: bill.organization_id },
+      where: { id: resolvedJournalId, organization_id: bill.organization_id },
       select: { id: true },
     });
     if (!journal) return res.status(400).json({ error: 'journal_id does not belong to organization_id' });
@@ -307,8 +319,8 @@ router.post('/vendor-bills/:id/pay', requireAuth, requireRole('admin', 'accounta
           payment_number: await generatePaymentNumber(bill.organization_id, 'VPAY', tx),
           payment_direction: 'outbound',
           contact_id: bill.contact_id,
-          journal_id: journalId,
-          payment_account_id: paymentAccountId,
+          journal_id: resolvedJournalId,
+          payment_account_id: resolvedPaymentAccountId,
           payment_date: new Date(paymentDate),
           amount,
           currency_code: bill.currency_code,

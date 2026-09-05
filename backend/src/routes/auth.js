@@ -5,14 +5,20 @@ import jwt from 'jsonwebtoken';
 
 import { prisma } from '../lib/prisma.js';
 import { resolveOrganizationId } from '../lib/organization.js';
-import { requireAuth, requireRole } from '../middleware/auth.js';
+import { normalizeRole, requireAuth, requireRole, ROLES } from '../middleware/auth.js';
 
 const router = Router();
 
 const NIL_INSTANCE_ID = '00000000-0000-0000-0000-000000000000';
 const LOGIN_ID_PATTERN = /^[A-Za-z0-9_]{6,12}$/;
 const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-const USER_ROLES = ['admin', 'accountant', 'contact_portal'];
+const USER_ROLES = ['ADMIN', 'ACCOUNTANT', 'USER'];
+
+const ROLE_TO_DATABASE = {
+  ADMIN: 'admin',
+  ACCOUNTANT: 'accountant',
+  USER: 'contact_portal',
+};
 
 function validateLoginId(loginId) {
   if (typeof loginId !== 'string' || !LOGIN_ID_PATTERN.test(loginId)) {
@@ -112,7 +118,7 @@ const handleSignupOrRegister = async (req, res) => {
     email: appUser.email,
     login_id: appUser.login_id,
     display_name: appUser.display_name,
-    role: membership.role,
+    role: normalizeRole(membership.role),
     organization_id: membership.organization_id,
   });
 };
@@ -135,12 +141,13 @@ router.post('/create-user', requireAuth, requireRole('admin'), async (req, res) 
     return res.status(400).json({ error: 'email, password, login_id, display_name, and role are required' });
   }
 
-  if (!USER_ROLES.includes(role)) {
+  const canonicalRole = normalizeRole(role);
+  if (!canonicalRole || !USER_ROLES.includes(canonicalRole)) {
     return res.status(400).json({ error: `role must be one of: ${USER_ROLES.join(', ')}` });
   }
 
-  if (role === 'contact_portal' && !contactId) {
-    return res.status(400).json({ error: 'contact_id is required when role is contact_portal' });
+  if (canonicalRole === ROLES.USER && !contactId) {
+    return res.status(400).json({ error: 'contact_id is required when role is USER' });
   }
 
   const loginIdError = validateLoginId(loginId);
@@ -171,12 +178,12 @@ router.post('/create-user', requireAuth, requireRole('admin'), async (req, res) 
     data: {
       organization_id: resolvedOrganizationId,
       user_id: appUser.id,
-      role,
+      role: ROLE_TO_DATABASE[canonicalRole],
       created_by_user_id: req.user.id,
     },
   });
 
-  if (role === 'contact_portal') {
+  if (canonicalRole === ROLES.USER) {
     await prisma.contact_portal_accounts.create({
       data: { contact_id: contactId, membership_id: membership.id },
     });
@@ -187,9 +194,9 @@ router.post('/create-user', requireAuth, requireRole('admin'), async (req, res) 
     email: appUser.email,
     login_id: appUser.login_id,
     display_name: appUser.display_name,
-    role: membership.role,
+    role: normalizeRole(membership.role),
     organization_id: membership.organization_id,
-    contact_id: role === 'contact_portal' ? contactId : null,
+    contact_id: canonicalRole === ROLES.USER ? contactId : null,
   });
 });
 
@@ -229,8 +236,9 @@ router.post('/login', async (req, res) => {
     return res.status(403).json({ error: 'No active organization membership' });
   }
 
+  const role = normalizeRole(membership.role);
   let contactId = null;
-  if (membership.role === 'contact_portal') {
+  if (role === ROLES.USER) {
     const portalAccount = await prisma.contact_portal_accounts.findUnique({
       where: { membership_id: membership.id },
       select: { contact_id: true },
@@ -239,7 +247,7 @@ router.post('/login', async (req, res) => {
   }
 
   const token = jwt.sign(
-    { id: appUser.id, role: membership.role, contact_id: contactId },
+    { id: appUser.id, role, contact_id: contactId },
     process.env.JWT_SECRET,
     { expiresIn: '12h' },
   );
@@ -251,7 +259,7 @@ router.post('/login', async (req, res) => {
       email: appUser.email,
       login_id: appUser.login_id,
       display_name: appUser.display_name,
-      role: membership.role,
+      role,
       organization_id: membership.organization_id,
       contact_id: contactId,
     },

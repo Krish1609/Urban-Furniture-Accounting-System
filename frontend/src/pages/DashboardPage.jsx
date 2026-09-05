@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAccounting } from '../context/AccountingContext';
 import {
@@ -22,6 +22,7 @@ import Modal from '../components/Modal';
 
 export default function DashboardPage() {
   const { theme } = useTheme();
+  const location = useLocation();
   const {
     orders,
     invoices,
@@ -34,6 +35,7 @@ export default function DashboardPage() {
     netProfit
   } = useAccounting();
   const navigate = useNavigate();
+  const unauthorized = location.state?.unauthorized;
 
   // Active navigation dropdown / mega menu state
   const [activeNavMenu, setActiveNavMenu] = useState(null);
@@ -115,6 +117,21 @@ export default function DashboardPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem' }}>
+      {unauthorized && (
+        <div
+          role="alert"
+          style={{
+            padding: '0.75rem 1rem',
+            border: `1px solid ${theme.error}`,
+            backgroundColor: theme.errorBg,
+            color: theme.error,
+            borderRadius: '6px',
+            fontWeight: 600,
+          }}
+        >
+          Not authorized for that action.
+        </div>
+      )}
       {/* Title & App Dashboard Flow Navigation Container */}
       <div
         style={{

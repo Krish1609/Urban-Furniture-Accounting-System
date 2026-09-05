@@ -73,7 +73,7 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const login = async (loginId, password, role = 'Administrator') => {
+  const login = async (loginId, password, selectedRole = 'Administrator') => {
     if (isSupabaseConfigured) {
       const email = loginId.includes('@') ? loginId : undefined;
       if (!email) {
@@ -87,12 +87,21 @@ export function AuthProvider({ children }) {
       return { ...data, role: user.role };
     }
 
-    const response = await api.loginUser({ loginId, password, role });
+    const response = await api.loginUser({ loginId, password, role: selectedRole });
+    const apiUser = response.user;
+    if (!apiUser?.id || !apiUser?.role) {
+      throw new Error('Login response did not include a valid user role');
+    }
+
+    localStorage.setItem('furniledger_token', response.token);
     const user = {
-      name: role === 'Administrator' ? 'Admin Manager' : 'Nimesh Pathak',
-      loginId,
-      email: role === 'Administrator' ? 'admin@urbanfurniture.com' : 'nimesh.pathak@client.com',
-      role,
+      id: apiUser.id,
+      name: apiUser.display_name,
+      loginId: apiUser.login_id,
+      email: apiUser.email,
+      role: normalizeRole(apiUser.role),
+      organizationId: apiUser.organization_id,
+      contactId: apiUser.contact_id,
     };
     setCurrentUser(user);
     setIsAuthenticated(true);
@@ -115,6 +124,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     if (isSupabaseConfigured) await signOut();
+    localStorage.removeItem('furniledger_token');
     setIsAuthenticated(false);
     setCurrentUser(null);
   };

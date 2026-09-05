@@ -5,7 +5,7 @@ import { useAccounting } from '../context/AccountingContext';
 import { Receipt, CreditCard, CheckCircle2, AlertCircle, Eye, Printer, ShieldCheck } from 'lucide-react';
 import Modal from '../components/Modal';
 
-export default function UserPortalPage() {
+export default function UserPortalPage({ view = 'invoices' }) {
   const { theme } = useTheme();
   const { currentUser } = useAuth();
   const { invoices, payInvoice } = useAccounting();
@@ -16,9 +16,9 @@ export default function UserPortalPage() {
   const [successToast, setSuccessToast] = useState(null);
 
   // Invoices for current contact or customer
-  const userInvoices = invoices.filter(
-    (inv) => inv.contactName.toLowerCase().includes('nimesh') || inv.contactName.toLowerCase().includes('azure') || true
-  );
+  const userInvoices = invoices.filter((inv) => (
+    view === 'bills' ? inv.type === 'Vendor Bill' : inv.type === 'Customer Invoice'
+  ));
 
   const totalDue = userInvoices
     .filter((inv) => inv.status !== 'Paid')
@@ -58,7 +58,7 @@ export default function UserPortalPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: theme.accentGold, letterSpacing: '0.1em' }}>
-                Client &amp; Vendor Self-Service Portal
+                {view === 'bills' ? 'My Bills' : 'My Invoices'}
               </span>
             </div>
             <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.45rem', fontWeight: 600, color: theme.textMain }}>
@@ -155,7 +155,7 @@ export default function UserPortalPage() {
       >
         <div style={{ padding: '1.2rem 1.4rem', borderBottom: `1px solid ${theme.borderLight}` }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: theme.textMain }}>
-            My Invoices, Bills &amp; Payment Receipts
+            {view === 'bills' ? 'My Bills' : 'My Invoices'}
           </h2>
         </div>
 

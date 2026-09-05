@@ -3,6 +3,12 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+async function readResponse(response) {
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || 'Request failed');
+  return body;
+}
+
 export const api = {
   // Health Check
   async checkHealth() {
@@ -30,16 +36,12 @@ export const api = {
   },
 
   async loginUser(credentials) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-      return await res.json();
-    } catch (err) {
-      return { success: true, message: 'Logged in (client mode)', user: credentials };
-    }
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    return readResponse(res);
   },
 
   // Generic CRUD Helper
