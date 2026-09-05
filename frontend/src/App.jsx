@@ -616,7 +616,7 @@ export default function App() {
                   id="create-name"
                   type="text"
                   style={styles.textInput(focusedField === 'name')}
-                  placeholder="Enter full name"
+                  placeholder="Enter your name"
                   value={name}
                   onFocus={() => setFocusedField('name')}
                   onBlur={() => setFocusedField(null)}
@@ -640,7 +640,7 @@ export default function App() {
                   id="create-loginId"
                   type="text"
                   style={styles.textInput(focusedField === 'loginId')}
-                  placeholder="e.g. john_doe"
+                  placeholder="e.g. swami_vivekanand"
                   value={loginId}
                   onFocus={() => setFocusedField('loginId')}
                   onBlur={() => setFocusedField(null)}
@@ -659,7 +659,7 @@ export default function App() {
                   id="create-email"
                   type="email"
                   style={styles.textInput(focusedField === 'email')}
-                  placeholder="user@urbanfurniture.com"
+                  placeholder="swami@urbanfurniture.com"
                   value={email}
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField(null)}
