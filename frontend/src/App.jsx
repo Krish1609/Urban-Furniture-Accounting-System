@@ -31,7 +31,8 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
 
               {/* Main Authenticated ERP & Portal Pages */}
-              <Route element={<DashboardLayout />}>
+              <Route element={<ProtectedRoute />}>
+                <Route element={<DashboardLayout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/contacts" element={<ContactsPage />} />
                 <Route path="/products" element={<ProductsPage />} />
@@ -40,6 +41,7 @@ export default function App() {
                 <Route path="/budgets" element={<BudgetsPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/portal" element={<UserPortalPage />} />
+                </Route>
               </Route>
 
               {/* Default Fallback */}

@@ -42,10 +42,10 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      await login(loginId, password, role);
-      setStatusMessage({ type: 'success', text: `Welcome to FurniLedger! Signed in as ${role}.` });
+      const authenticatedUser = await login(loginId, password);
+      setStatusMessage({ type: 'success', text: 'Welcome to FurniLedger!' });
       setTimeout(() => {
-        if (role === 'Administrator') {
+        if (authenticatedUser.role === 'Administrator') {
           navigate('/dashboard');
         } else {
           navigate('/portal');
