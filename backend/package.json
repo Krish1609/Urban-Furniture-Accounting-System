@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "db:generate": "prisma generate",
+    "db:validate": "prisma validate",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js"
   },

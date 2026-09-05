@@ -20,6 +20,8 @@ npm install
 
 Copy `frontend/.env.example` to `frontend/.env` and fill in the Supabase project URL and publishable key from the Supabase dashboard under Project Settings > API. The SQL files in `supabase/migrations` must be applied to the same project before creating users.
 
+Copy `backend/.env.example` to `backend/.env` and set `DATABASE_URL` to the Supabase PostgreSQL connection string from Project Settings > Database. The backend uses Prisma and verifies this connection through `GET /api/health`.
+
 Never put a Supabase service-role key in the frontend. The publishable key is intended for browser use and database access is restricted by the project's row-level security policies.
 
 ## Run
