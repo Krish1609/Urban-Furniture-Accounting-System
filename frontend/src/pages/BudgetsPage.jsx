@@ -43,13 +43,13 @@ export default function BudgetsPage() {
   };
 
   return (
-    <div>
+    <div style={{ color: theme.textMain }}>
       {/* Top Banner */}
       <div
         style={{
           backgroundColor: theme.bgCard,
           border: `1px solid ${theme.borderLight}`,
-          borderRadius: '8px',
+          borderRadius: '12px',
           padding: '1.8rem',
           boxShadow: theme.shadow,
           marginBottom: '1.5rem',
@@ -57,10 +57,10 @@ export default function BudgetsPage() {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.4rem', fontWeight: 600, color: theme.textMain }}>
+            <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.45rem', fontWeight: 600, color: theme.textMain }}>
               Budgets &amp; Analytic Cost Centers
             </h1>
-            <p style={{ fontSize: '0.8rem', color: theme.textMuted }}>
+            <p style={{ fontSize: '0.82rem', color: theme.textMuted, marginTop: '0.2rem' }}>
               Track departmental budgets, manufacturing cost centers, and financial variances.
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function BudgetsPage() {
               fontSize: '0.82rem',
               fontWeight: 600,
               cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(191, 160, 124, 0.25)',
+              boxShadow: '0 4px 12px rgba(226, 194, 155, 0.25)',
             }}
           >
             <Plus size={15} />
@@ -90,8 +90,8 @@ export default function BudgetsPage() {
       </div>
 
       {/* Analytic Accounts Overview Grid */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '0.92rem', fontWeight: 600, color: theme.textMuted, marginBottom: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <div style={{ marginBottom: '1.8rem' }}>
+        <h2 style={{ fontSize: '0.86rem', fontWeight: 700, color: theme.textDim, marginBottom: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
           Active Analytic Accounts (Cost Centers)
         </h2>
         <div
@@ -107,22 +107,22 @@ export default function BudgetsPage() {
               style={{
                 backgroundColor: theme.bgCard,
                 border: `1px solid ${theme.borderLight}`,
-                borderRadius: '8px',
-                padding: '1.2rem',
+                borderRadius: '10px',
+                padding: '1.3rem',
                 boxShadow: theme.shadow,
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: theme.accentGold }}>{ana.code}</span>
-                <span style={{ fontSize: '0.72rem', padding: '0.15rem 0.45rem', borderRadius: '4px', backgroundColor: theme.bgSubtle, color: theme.textMuted }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: theme.accentGold, fontFamily: 'monospace' }}>{ana.code}</span>
+                <span style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px', backgroundColor: theme.bgSubtle, color: theme.textMain, border: `1px solid ${theme.borderLight}` }}>
                   {ana.type}
                 </span>
               </div>
-              <div style={{ fontSize: '0.95rem', fontWeight: 600, color: theme.textMain, marginBottom: '0.3rem' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 600, color: theme.textMain, marginBottom: '0.35rem' }}>
                 {ana.name}
               </div>
-              <div style={{ fontSize: '0.78rem', color: theme.textMuted }}>
-                Cost Center for tracking operational &amp; material allocation
+              <div style={{ fontSize: '0.8rem', color: theme.textMuted }}>
+                Cost Center for operational &amp; timber procurement tracking
               </div>
             </div>
           ))}
@@ -134,27 +134,27 @@ export default function BudgetsPage() {
         style={{
           backgroundColor: theme.bgCard,
           border: `1px solid ${theme.borderLight}`,
-          borderRadius: '8px',
+          borderRadius: '12px',
           overflow: 'hidden',
           boxShadow: theme.shadow,
         }}
       >
         <div style={{ padding: '1.2rem 1.4rem', borderBottom: `1px solid ${theme.borderLight}` }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 600, color: theme.textMain }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: theme.textMain }}>
             Fiscal Budgets &amp; Variance Tracking
           </h2>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
             <thead>
-              <tr style={{ backgroundColor: theme.bgSubtle, borderBottom: `1px solid ${theme.borderLight}`, color: theme.textMuted }}>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Budget Name</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Cost Center</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Period</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600, textAlign: 'right' }}>Budgeted</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600, textAlign: 'right' }}>Actual Spent</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Utilization (% Used)</th>
+              <tr style={{ backgroundColor: theme.bgSubtle }}>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Budget Name</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cost Center</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Period</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Budgeted</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Actual Spent</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Utilization (% Used)</th>
               </tr>
             </thead>
             <tbody>
@@ -170,30 +170,31 @@ export default function BudgetsPage() {
                       color: theme.textMain,
                     }}
                   >
-                    <td style={{ padding: '0.85rem 1.2rem', fontWeight: 600, color: theme.accentGold }}>
+                    <td style={{ padding: '0.95rem 1.2rem', fontWeight: 600, color: theme.accentGold }}>
                       {b.name}
                     </td>
-                    <td style={{ padding: '0.85rem 1.2rem', fontWeight: 500 }}>
+                    <td style={{ padding: '0.95rem 1.2rem', fontWeight: 500, color: theme.textMain }}>
                       {b.analyticAccountName}
                     </td>
-                    <td style={{ padding: '0.85rem 1.2rem', color: theme.textMuted }}>
+                    <td style={{ padding: '0.95rem 1.2rem', color: theme.textMuted }}>
                       {b.period}
                     </td>
-                    <td style={{ padding: '0.85rem 1.2rem', textAlign: 'right', fontWeight: 600 }}>
+                    <td style={{ padding: '0.95rem 1.2rem', textAlign: 'right', fontWeight: 700, color: theme.textMain }}>
                       ₹{b.budgetedAmount.toLocaleString()}
                     </td>
-                    <td style={{ padding: '0.85rem 1.2rem', textAlign: 'right', fontWeight: 600, color: isOverBudget ? theme.error : theme.textMain }}>
+                    <td style={{ padding: '0.95rem 1.2rem', textAlign: 'right', fontWeight: 700, color: isOverBudget ? theme.error : theme.textMain }}>
                       ₹{b.actualAmount.toLocaleString()}
                     </td>
-                    <td style={{ padding: '0.85rem 1.2rem', minWidth: '160px' }}>
+                    <td style={{ padding: '0.95rem 1.2rem', minWidth: '180px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div
                           style={{
                             flex: 1,
-                            height: '6px',
+                            height: '7px',
                             backgroundColor: theme.bgSubtle,
-                            borderRadius: '3px',
+                            borderRadius: '4px',
                             overflow: 'hidden',
+                            border: `1px solid ${theme.borderLight}`,
                           }}
                         >
                           <div
@@ -201,11 +202,11 @@ export default function BudgetsPage() {
                               width: `${percent}%`,
                               height: '100%',
                               backgroundColor: percent > 90 ? theme.error : theme.accentGold,
-                              borderRadius: '3px',
+                              borderRadius: '4px',
                             }}
                           />
                         </div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: percent > 90 ? theme.error : theme.textMuted }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: percent > 90 ? theme.error : theme.textMain }}>
                           {percent}%
                         </span>
                       </div>
@@ -233,7 +234,7 @@ export default function BudgetsPage() {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               style={{
                 width: '100%',
-                padding: '0.6rem 0.85rem',
+                padding: '0.65rem 0.85rem',
                 borderRadius: '6px',
                 border: `1px solid ${theme.borderLight}`,
                 backgroundColor: theme.bgInput,
@@ -252,7 +253,7 @@ export default function BudgetsPage() {
               onChange={(e) => setFormData({ ...formData, analyticAccountId: e.target.value })}
               style={{
                 width: '100%',
-                padding: '0.6rem 0.85rem',
+                padding: '0.65rem 0.85rem',
                 borderRadius: '6px',
                 border: `1px solid ${theme.borderLight}`,
                 backgroundColor: theme.bgInput,
@@ -279,7 +280,7 @@ export default function BudgetsPage() {
                 onChange={(e) => setFormData({ ...formData, period: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '0.6rem 0.85rem',
+                  padding: '0.65rem 0.85rem',
                   borderRadius: '6px',
                   border: `1px solid ${theme.borderLight}`,
                   backgroundColor: theme.bgInput,
@@ -301,7 +302,7 @@ export default function BudgetsPage() {
                 onChange={(e) => setFormData({ ...formData, budgetedAmount: e.target.value })}
                 style={{
                   width: '100%',
-                  padding: '0.6rem 0.85rem',
+                  padding: '0.65rem 0.85rem',
                   borderRadius: '6px',
                   border: `1px solid ${theme.borderLight}`,
                   backgroundColor: theme.bgInput,

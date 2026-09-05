@@ -42,13 +42,13 @@ export default function UserPortalPage() {
   };
 
   return (
-    <div>
+    <div style={{ color: theme.textMain }}>
       {/* Top Banner */}
       <div
         style={{
           backgroundColor: theme.bgCard,
           border: `1px solid ${theme.borderLight}`,
-          borderRadius: '8px',
+          borderRadius: '12px',
           padding: '1.8rem',
           boxShadow: theme.shadow,
           marginBottom: '1.5rem',
@@ -61,10 +61,10 @@ export default function UserPortalPage() {
                 Client &amp; Vendor Self-Service Portal
               </span>
             </div>
-            <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.4rem', fontWeight: 600, color: theme.textMain }}>
+            <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.45rem', fontWeight: 600, color: theme.textMain }}>
               Welcome, {currentUser.name}
             </h1>
-            <p style={{ fontSize: '0.8rem', color: theme.textMuted }}>
+            <p style={{ fontSize: '0.82rem', color: theme.textMuted, marginTop: '0.2rem' }}>
               Account Login: {currentUser.loginId} • Connected to FurniLedger Secure Ledger
             </p>
           </div>
@@ -84,6 +84,7 @@ export default function UserPortalPage() {
               borderRadius: '6px',
               fontSize: '0.82rem',
               fontWeight: 600,
+              border: `1px solid ${theme.success}`,
             }}
           >
             <CheckCircle2 size={16} />
@@ -105,18 +106,18 @@ export default function UserPortalPage() {
           style={{
             backgroundColor: theme.bgCard,
             border: `1px solid ${theme.borderLight}`,
-            borderRadius: '8px',
-            padding: '1.4rem',
+            borderRadius: '10px',
+            padding: '1.5rem',
             boxShadow: theme.shadow,
           }}
         >
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: theme.textDim, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Outstanding Balance Due
           </span>
-          <div style={{ fontSize: '1.6rem', fontWeight: 700, color: totalDue > 0 ? theme.error : theme.success, margin: '0.4rem 0' }}>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: totalDue > 0 ? theme.error : theme.success, margin: '0.4rem 0' }}>
             ₹{totalDue.toLocaleString()}
           </div>
-          <span style={{ fontSize: '0.75rem', color: theme.textMuted }}>
+          <span style={{ fontSize: '0.78rem', color: theme.textMuted }}>
             {totalDue > 0 ? 'Pending clearance' : 'All invoices cleared'}
           </span>
         </div>
@@ -125,18 +126,18 @@ export default function UserPortalPage() {
           style={{
             backgroundColor: theme.bgCard,
             border: `1px solid ${theme.borderLight}`,
-            borderRadius: '8px',
-            padding: '1.4rem',
+            borderRadius: '10px',
+            padding: '1.5rem',
             boxShadow: theme.shadow,
           }}
         >
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: theme.textMuted, textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: theme.textDim, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Total Lifetime Settled
           </span>
-          <div style={{ fontSize: '1.6rem', fontWeight: 700, color: theme.textMain, margin: '0.4rem 0' }}>
+          <div style={{ fontSize: '1.75rem', fontWeight: 700, color: theme.textMain, margin: '0.4rem 0' }}>
             ₹{totalPaid.toLocaleString()}
           </div>
-          <span style={{ fontSize: '0.75rem', color: theme.textMuted }}>
+          <span style={{ fontSize: '0.78rem', color: theme.textMuted }}>
             Successfully recorded in journal ledger
           </span>
         </div>
@@ -147,28 +148,28 @@ export default function UserPortalPage() {
         style={{
           backgroundColor: theme.bgCard,
           border: `1px solid ${theme.borderLight}`,
-          borderRadius: '8px',
+          borderRadius: '12px',
           overflow: 'hidden',
           boxShadow: theme.shadow,
         }}
       >
         <div style={{ padding: '1.2rem 1.4rem', borderBottom: `1px solid ${theme.borderLight}` }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 600, color: theme.textMain }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: theme.textMain }}>
             My Invoices, Bills &amp; Payment Receipts
           </h2>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
             <thead>
-              <tr style={{ backgroundColor: theme.bgSubtle, borderBottom: `1px solid ${theme.borderLight}`, color: theme.textMuted }}>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Invoice #</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Type</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Billing Date</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Due Date</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600, textAlign: 'right' }}>Total Amount</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600 }}>Status</th>
-                <th style={{ padding: '0.85rem 1.2rem', fontWeight: 600, textAlign: 'center' }}>Action</th>
+              <tr style={{ backgroundColor: theme.bgSubtle }}>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Invoice #</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Type</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Billing Date</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Due Date</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'right' }}>Total Amount</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Status</th>
+                <th style={{ padding: '0.85rem 1.2rem', color: theme.textDim, fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -180,52 +181,54 @@ export default function UserPortalPage() {
                     color: theme.textMain,
                   }}
                 >
-                  <td style={{ padding: '0.85rem 1.2rem', fontWeight: 600, color: theme.accentGold }}>
+                  <td style={{ padding: '0.95rem 1.2rem', fontWeight: 600, color: theme.accentGold }}>
                     {inv.id}
                   </td>
-                  <td style={{ padding: '0.85rem 1.2rem', fontWeight: 500 }}>
+                  <td style={{ padding: '0.95rem 1.2rem', fontWeight: 500, color: theme.textMain }}>
                     {inv.type}
                   </td>
-                  <td style={{ padding: '0.85rem 1.2rem', color: theme.textMuted }}>
+                  <td style={{ padding: '0.95rem 1.2rem', color: theme.textMuted }}>
                     {inv.date}
                   </td>
-                  <td style={{ padding: '0.85rem 1.2rem', color: theme.textMuted }}>
+                  <td style={{ padding: '0.95rem 1.2rem', color: theme.textMuted }}>
                     {inv.dueDate}
                   </td>
-                  <td style={{ padding: '0.85rem 1.2rem', textAlign: 'right', fontWeight: 600 }}>
+                  <td style={{ padding: '0.95rem 1.2rem', textAlign: 'right', fontWeight: 700, color: theme.textMain }}>
                     ₹{inv.amount.toLocaleString()}
                   </td>
-                  <td style={{ padding: '0.85rem 1.2rem' }}>
+                  <td style={{ padding: '0.95rem 1.2rem', textAlign: 'center' }}>
                     <span
                       style={{
-                        padding: '0.2rem 0.55rem',
-                        borderRadius: '4px',
+                        padding: '0.2rem 0.6rem',
+                        borderRadius: '12px',
                         fontSize: '0.72rem',
                         fontWeight: 600,
                         backgroundColor: inv.status === 'Paid' ? theme.successBg : theme.errorBg,
                         color: inv.status === 'Paid' ? theme.success : theme.error,
+                        border: `1px solid ${inv.status === 'Paid' ? theme.success : theme.error}`,
                       }}
                     >
                       {inv.status}
                     </span>
                   </td>
-                  <td style={{ padding: '0.85rem 1.2rem', textAlign: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.45rem' }}>
+                  <td style={{ padding: '0.95rem 1.2rem', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
                       <button
                         type="button"
                         onClick={() => setSelectedInvoice(inv)}
                         title="View Official Receipt"
                         style={{
-                          padding: '0.35rem 0.65rem',
+                          padding: '0.4rem 0.75rem',
                           backgroundColor: theme.bgSubtle,
                           border: `1px solid ${theme.borderLight}`,
-                          borderRadius: '4px',
+                          borderRadius: '5px',
                           color: theme.textMain,
                           cursor: 'pointer',
                           fontSize: '0.75rem',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '0.3rem',
+                          gap: '0.35rem',
+                          fontWeight: 600,
                         }}
                       >
                         <Eye size={13} />
@@ -237,17 +240,17 @@ export default function UserPortalPage() {
                           type="button"
                           onClick={() => setPayModalInvoice(inv)}
                           style={{
-                            padding: '0.35rem 0.75rem',
+                            padding: '0.4rem 0.85rem',
                             backgroundColor: theme.accentGold,
                             border: 'none',
-                            borderRadius: '4px',
+                            borderRadius: '5px',
                             color: '#0E0D0C',
                             cursor: 'pointer',
                             fontSize: '0.75rem',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '0.3rem',
+                            gap: '0.35rem',
                           }}
                         >
                           <CreditCard size={13} />
@@ -274,14 +277,14 @@ export default function UserPortalPage() {
             <span style={{ fontSize: '0.8rem', color: theme.textMuted, display: 'block', marginBottom: '0.3rem' }}>
               Payee / Party
             </span>
-            <div style={{ fontSize: '1rem', fontWeight: 600, color: theme.textMain }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: 600, color: theme.textMain }}>
               {payModalInvoice?.contactName}
             </div>
           </div>
 
-          <div style={{ padding: '1rem', backgroundColor: theme.bgSubtle, borderRadius: '6px', border: `1px solid ${theme.borderLight}` }}>
+          <div style={{ padding: '1.2rem', backgroundColor: theme.bgSubtle, borderRadius: '8px', border: `1px solid ${theme.borderLight}` }}>
             <span style={{ fontSize: '0.75rem', color: theme.textMuted, display: 'block' }}>Total Amount to Settle</span>
-            <div style={{ fontSize: '1.4rem', fontWeight: 700, color: theme.accentGold }}>
+            <div style={{ fontSize: '1.6rem', fontWeight: 700, color: theme.accentGold }}>
               ₹{payModalInvoice?.amount.toLocaleString()}
             </div>
           </div>
@@ -295,7 +298,7 @@ export default function UserPortalPage() {
               onChange={(e) => setPaymentMethod(e.target.value)}
               style={{
                 width: '100%',
-                padding: '0.6rem 0.85rem',
+                padding: '0.65rem 0.85rem',
                 borderRadius: '6px',
                 border: `1px solid ${theme.borderLight}`,
                 backgroundColor: theme.bgInput,
@@ -335,7 +338,7 @@ export default function UserPortalPage() {
                 backgroundColor: theme.accentGold,
                 color: '#0E0D0C',
                 fontSize: '0.82rem',
-                fontWeight: 600,
+                fontWeight: 700,
                 cursor: 'pointer',
               }}
             >
@@ -368,7 +371,7 @@ export default function UserPortalPage() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem', fontSize: '0.8rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem', fontSize: '0.82rem' }}>
               <div>
                 <span style={{ color: theme.textMuted, display: 'block' }}>Billed To:</span>
                 <span style={{ fontWeight: 600, color: theme.textMain }}>{selectedInvoice.contactName}</span>
@@ -379,7 +382,7 @@ export default function UserPortalPage() {
               </div>
             </div>
 
-            <div style={{ padding: '1rem', backgroundColor: theme.bgSubtle, borderRadius: '6px', border: `1px solid ${theme.borderLight}`, marginBottom: '1.2rem' }}>
+            <div style={{ padding: '1rem', backgroundColor: theme.bgSubtle, borderRadius: '8px', border: `1px solid ${theme.borderLight}`, marginBottom: '1.2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                 <span style={{ color: theme.textMuted }}>Subtotal:</span>
                 <span style={{ fontWeight: 600, color: theme.textMain }}>₹{Math.round(selectedInvoice.amount / 1.18).toLocaleString()}</span>
@@ -406,6 +409,7 @@ export default function UserPortalPage() {
                   color: theme.textMuted,
                   fontSize: '0.8rem',
                   cursor: 'pointer',
+                  fontWeight: 600,
                 }}
               >
                 Close
@@ -414,13 +418,13 @@ export default function UserPortalPage() {
                 type="button"
                 onClick={() => window.print()}
                 style={{
-                  padding: '0.5rem 1rem',
+                  padding: '0.5rem 1.1rem',
                   borderRadius: '6px',
                   border: 'none',
                   backgroundColor: theme.accentGold,
                   color: '#0E0D0C',
                   fontSize: '0.8rem',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   cursor: 'pointer',
                 }}
               >
