@@ -31,9 +31,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const response = await login(loginId, password);
-      const userRole = response.user?.role;
+      const userRole = response.role ?? response.user?.role ?? 'Administrator';
       setStatusMessage({ type: 'success', text: `Welcome to FurniLedger! Signed in as ${userRole}.` });
-      navigate(userRole === 'USER' ? '/my-invoices' : '/dashboard', { replace: true });
+      navigate(userRole === 'User' || userRole === 'USER' ? '/my-invoices' : '/dashboard', { replace: true });
     } catch (error) {
       setStatusMessage({ type: 'error', text: error.message || 'Unable to sign in.' });
     } finally {
@@ -187,7 +187,7 @@ export default function LoginPage() {
               cursor: loading ? 'not-allowed' : 'pointer',
             }}
           >
-            <span>{loading ? 'Authenticating...' : `Sign in as ${role}`}</span>
+            <span>{loading ? 'Authenticating...' : 'Sign in'}</span>
             {!loading && <ArrowRight size={15} />}
           </button>
         </form>
