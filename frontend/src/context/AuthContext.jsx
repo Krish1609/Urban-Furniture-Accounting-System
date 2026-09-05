@@ -1,45 +1,65 @@
-import { createContext, useContext, useState } from 'react';
-import { api } from '../services/api';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState({
-    name: 'Admin User',
-    loginId: 'admin_demo',
-    email: 'admin@urbanfurniture.com',
-    role: 'Administrator', // 'Administrator' | 'User'
-  });
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      setCurrentUser(session?.user ?? null);
+      setIsAuthenticated(Boolean(session?.user));
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setCurrentUser(session?.user ?? null);
+      setIsAuthenticated(Boolean(session?.user));
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const login = async (loginId, password, role = 'Administrator') => {
-    const res = await api.loginUser({ loginId, password, role });
-    setCurrentUser({
-      name: role === 'Administrator' ? 'Admin Manager' : 'Nimesh Pathak',
-      loginId,
-      email: role === 'Administrator' ? 'admin@urbanfurniture.com' : 'nimesh.pathak@client.com',
-      role,
-    });
-    setIsAuthenticated(true);
-    return res;
+    const email = loginId.includes('@') ? loginId : undefined;
+    if (!email) {
+      throw new Error('Sign in with the email address used to create the account.');
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
   };
 
   const register = async (userData) => {
-    const res = await api.registerUser(userData);
-    return res;
+    const { data, error } = await supabase.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      options: {
+        data: {
+          login_id: userData.loginId,
+          display_name: userData.name,
+        },
+      },
+    });
+    if (error) throw error;
+    return data;
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
-  const switchRole = (newRole) => {
-    setCurrentUser((prev) => ({
-      ...prev,
-      role: newRole,
-      name: newRole === 'Administrator' ? 'Admin Manager' : 'Nimesh Pathak',
-    }));
-  };
+  const switchRole = () => {};
 
   return (
     <AuthContext.Provider
