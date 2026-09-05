@@ -10,7 +10,7 @@ const router = Router();
 
 const CONTACT_TYPES = ['customer', 'vendor', 'both'];
 
-router.get('/contacts', requireAuth, async (req, res, next) => {
+router.get('/contacts', requireAuth, requireRole('admin', 'accountant'), async (req, res, next) => {
   try {
     const { organization_id: organizationId } = req.query;
     const contacts = await prisma.contacts.findMany({

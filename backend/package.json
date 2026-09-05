@@ -6,7 +6,8 @@
   "scripts": {
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
-    "dev": "nodemon src/index.js",
+    "dev": "node src/index.js",
+    "dev:watch": "nodemon src/index.js",
     "start": "node src/index.js"
   },
   "dependencies": {
