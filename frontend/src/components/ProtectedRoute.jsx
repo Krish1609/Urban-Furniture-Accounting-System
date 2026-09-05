@@ -1,27 +1,38 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
-export default function ProtectedRoute({ allowedRoles = [] }) {
-  const { isAuthenticated, currentUser, loading } = useAuth();
-  const location = useLocation();
+export default function ProtectedRoute({ allowedRoles }) {
+  const { currentUser, isAuthenticated, loading } = useAuth();
+  const { theme } = useTheme();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          backgroundColor: theme.bgApp,
+          color: theme.textMain,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '0.95rem',
+        }}
+      >
+        Loading FurniLedger...
+      </div>
+    );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!isAuthenticated || !currentUser) {
+    return <Navigate to="/login" replace />;
   }
 
-  const role = currentUser?.role;
-  if (role === 'USER' && !allowedRoles.includes('USER')) {
-    return <Navigate to="/my-invoices" replace />;
-  }
-  if (['ADMIN', 'ACCOUNTANT'].includes(role) && allowedRoles.includes('USER')) {
+  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
+    if (currentUser.role === 'User') {
+      return <Navigate to="/portal" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
-  }
-  if (allowedRoles.length && !allowedRoles.includes(role)) {
-    return <Navigate to="/dashboard" replace state={{ unauthorized: true, from: location }} />;
   }
 
   return <Outlet />;

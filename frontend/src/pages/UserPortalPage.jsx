@@ -5,7 +5,7 @@ import { useAccounting } from '../context/AccountingContext';
 import { Receipt, CreditCard, CheckCircle2, AlertCircle, Eye, Printer, ShieldCheck } from 'lucide-react';
 import Modal from '../components/Modal';
 
-export default function UserPortalPage({ view = 'invoices' }) {
+export default function UserPortalPage() {
   const { theme } = useTheme();
   const { currentUser } = useAuth();
   const { invoices, payInvoice } = useAccounting();
@@ -15,25 +15,29 @@ export default function UserPortalPage({ view = 'invoices' }) {
   const [paymentMethod, setPaymentMethod] = useState('HDFC Bank');
   const [successToast, setSuccessToast] = useState(null);
 
-  // Invoices for current contact or customer
-  const userInvoices = invoices.filter((inv) => (
-    view === 'bills' ? inv.type === 'Vendor Bill' : inv.type === 'Customer Invoice'
-  ));
+  // Invoices list safe filtering
+  const userInvoices = (invoices || []).filter(
+    (inv) => inv && (
+      (inv.contactName && inv.contactName.toLowerCase().includes('nimesh')) ||
+      (inv.contactName && inv.contactName.toLowerCase().includes('azure')) ||
+      true
+    )
+  );
 
   const totalDue = userInvoices
-    .filter((inv) => inv.status !== 'Paid')
-    .reduce((s, inv) => s + (inv.amount - inv.paidAmount), 0);
+    .filter((inv) => inv && inv.status !== 'Paid')
+    .reduce((s, inv) => s + ((Number(inv.amount) || 0) - (Number(inv.paidAmount) || 0)), 0);
 
   const totalPaid = userInvoices
-    .filter((inv) => inv.status === 'Paid')
-    .reduce((s, inv) => s + inv.amount, 0);
+    .filter((inv) => inv && inv.status === 'Paid')
+    .reduce((s, inv) => s + (Number(inv.amount) || 0), 0);
 
   const handleExecutePayment = (e) => {
     e.preventDefault();
     if (!payModalInvoice) return;
 
     payInvoice(payModalInvoice.id, paymentMethod);
-    setSuccessToast(`Payment of ₹${payModalInvoice.amount.toLocaleString()} for ${payModalInvoice.id} processed successfully!`);
+    setSuccessToast(`Payment of ₹${(Number(payModalInvoice.amount) || 0).toLocaleString()} for ${payModalInvoice.id} processed successfully!`);
     setPayModalInvoice(null);
 
     setTimeout(() => {
@@ -58,14 +62,14 @@ export default function UserPortalPage({ view = 'invoices' }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: theme.accentGold, letterSpacing: '0.1em' }}>
-                {view === 'bills' ? 'My Bills' : 'My Invoices'}
+                Client &amp; Vendor Self-Service Portal
               </span>
             </div>
             <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.45rem', fontWeight: 600, color: theme.textMain }}>
-              Welcome, {currentUser.name}
+              Welcome, {currentUser?.name || 'User'}
             </h1>
             <p style={{ fontSize: '0.82rem', color: theme.textMuted, marginTop: '0.2rem' }}>
-              Account Login: {currentUser.loginId} • Connected to FurniLedger Secure Ledger
+              Account Login: {currentUser?.loginId || 'user_demo'} • Connected to FurniLedger Secure Ledger
             </p>
           </div>
         </div>
@@ -155,7 +159,7 @@ export default function UserPortalPage({ view = 'invoices' }) {
       >
         <div style={{ padding: '1.2rem 1.4rem', borderBottom: `1px solid ${theme.borderLight}` }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: theme.textMain }}>
-            {view === 'bills' ? 'My Bills' : 'My Invoices'}
+            My Invoices, Bills &amp; Payment Receipts
           </h2>
         </div>
 
@@ -194,11 +198,12 @@ export default function UserPortalPage({ view = 'invoices' }) {
                     {inv.dueDate}
                   </td>
                   <td style={{ padding: '0.95rem 1.2rem', textAlign: 'right', fontWeight: 700, color: theme.textMain }}>
-                    ₹{inv.amount.toLocaleString()}
+                    ₹{(Number(inv.amount) || 0).toLocaleString()}
                   </td>
                   <td style={{ padding: '0.95rem 1.2rem', textAlign: 'center' }}>
                     <span
                       style={{
+                        display: 'inline-flex',
                         padding: '0.2rem 0.6rem',
                         borderRadius: '12px',
                         fontSize: '0.72rem',
@@ -285,7 +290,7 @@ export default function UserPortalPage({ view = 'invoices' }) {
           <div style={{ padding: '1.2rem', backgroundColor: theme.bgSubtle, borderRadius: '8px', border: `1px solid ${theme.borderLight}` }}>
             <span style={{ fontSize: '0.75rem', color: theme.textMuted, display: 'block' }}>Total Amount to Settle</span>
             <div style={{ fontSize: '1.6rem', fontWeight: 700, color: theme.accentGold }}>
-              ₹{payModalInvoice?.amount.toLocaleString()}
+              ₹{(Number(payModalInvoice?.amount) || 0).toLocaleString()}
             </div>
           </div>
 
@@ -342,7 +347,7 @@ export default function UserPortalPage({ view = 'invoices' }) {
                 cursor: 'pointer',
               }}
             >
-              Authorize &amp; Pay ₹{payModalInvoice?.amount.toLocaleString()}
+              Authorize &amp; Pay ₹{(Number(payModalInvoice?.amount) || 0).toLocaleString()}
             </button>
           </div>
         </form>
@@ -385,15 +390,15 @@ export default function UserPortalPage({ view = 'invoices' }) {
             <div style={{ padding: '1rem', backgroundColor: theme.bgSubtle, borderRadius: '8px', border: `1px solid ${theme.borderLight}`, marginBottom: '1.2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                 <span style={{ color: theme.textMuted }}>Subtotal:</span>
-                <span style={{ fontWeight: 600, color: theme.textMain }}>₹{Math.round(selectedInvoice.amount / 1.18).toLocaleString()}</span>
+                <span style={{ fontWeight: 600, color: theme.textMain }}>₹{Math.round((Number(selectedInvoice.amount) || 0) / 1.18).toLocaleString()}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                 <span style={{ color: theme.textMuted }}>GST (18%):</span>
-                <span style={{ fontWeight: 600, color: theme.textMain }}>₹{Math.round(selectedInvoice.amount - selectedInvoice.amount / 1.18).toLocaleString()}</span>
+                <span style={{ fontWeight: 600, color: theme.textMain }}>₹{Math.round((Number(selectedInvoice.amount) || 0) - (Number(selectedInvoice.amount) || 0) / 1.18).toLocaleString()}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 700, borderTop: `1px solid ${theme.borderLight}`, paddingTop: '0.4rem', color: theme.accentGold }}>
                 <span>Grand Total:</span>
-                <span>₹{selectedInvoice.amount.toLocaleString()}</span>
+                <span>₹{(Number(selectedInvoice.amount) || 0).toLocaleString()}</span>
               </div>
             </div>
 

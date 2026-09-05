@@ -13,7 +13,7 @@ export default function CreateUserPage() {
   const [name, setName] = useState('');
   const [loginId, setLoginId] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('USER');
+  const [role, setRole] = useState('User'); // 'User' | 'Accountant'
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -24,13 +24,10 @@ export default function CreateUserPage() {
   const [statusMessage, setStatusMessage] = useState(null);
 
   // Validation Rules
-  const isLoginIdValid = loginId.trim().length >= 6 && loginId.trim().length <= 12;
+  const isLoginIdValid = loginId.trim().length >= 4 && loginId.trim().length <= 32;
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const hasMinLength = password.length > 8;
-  const hasLower = /[a-z]/.test(password);
-  const hasUpper = /[A-Z]/.test(password);
-  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-  const isPasswordValid = hasMinLength && hasLower && hasUpper && hasSpecial;
+  const hasMinLength = password.length >= 6;
+  const isPasswordValid = hasMinLength;
   const isPasswordMatch = password.length > 0 && password === confirmPassword;
 
   const handleCreateUser = async (e) => {
@@ -42,7 +39,7 @@ export default function CreateUserPage() {
       return;
     }
     if (!isLoginIdValid) {
-      setStatusMessage({ type: 'error', text: 'Login ID must be between 6 and 12 characters.' });
+      setStatusMessage({ type: 'error', text: 'Login ID must be between 4 and 32 characters.' });
       return;
     }
     if (!isEmailValid) {
@@ -50,7 +47,7 @@ export default function CreateUserPage() {
       return;
     }
     if (!isPasswordValid) {
-      setStatusMessage({ type: 'error', text: 'Password must be >8 characters with uppercase, lowercase & special character.' });
+      setStatusMessage({ type: 'error', text: 'Password must be at least 6 characters.' });
       return;
     }
     if (!isPasswordMatch) {
@@ -60,15 +57,18 @@ export default function CreateUserPage() {
 
     setLoading(true);
     try {
-      await register({ name, loginId, email, role, password });
+      await register({ name: name.trim(), loginId: loginId.trim(), email: email.trim(), role, password });
+      setLoading(false);
       setStatusMessage({ type: 'success', text: `Account created for ${name}! Redirecting to Sign In...` });
       setTimeout(() => {
-        navigate('/login');
+        navigate('/login', { state: { message: `Account created for ${name}! Please sign in.` } });
       }, 800);
-    } catch (error) {
-      setStatusMessage({ type: 'error', text: error.message || 'Unable to create the account.' });
-    } finally {
+    } catch (err) {
       setLoading(false);
+      setStatusMessage({
+        type: 'error',
+        text: err.message || 'Failed to create user account. Please check your inputs.'
+      });
     }
   };
 
@@ -164,16 +164,16 @@ export default function CreateUserPage() {
           {/* Login ID */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: theme.textMain }}>Login id</label>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: theme.textMain }}>Login ID</label>
               <span style={{ fontSize: '0.7rem', color: isLoginIdValid ? theme.success : theme.textDim }}>
-                6–12 characters
+                4–32 characters
               </span>
             </div>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <UserIcon size={15} style={{ position: 'absolute', left: '0.85rem', color: theme.textDim }} />
               <input
                 type="text"
-                placeholder="e.g. admin_demo"
+                placeholder="e.g. nimesh_user or john_acc"
                 value={loginId}
                 onFocus={() => setFocusedField('loginId')}
                 onBlur={() => setFocusedField(null)}
@@ -193,9 +193,9 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {/* E-mail id */}
+          {/* E-mail ID */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: theme.textMain }}>E-mail id</label>
+            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: theme.textMain }}>E-mail ID</label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <Mail size={15} style={{ position: 'absolute', left: '0.85rem', color: theme.textDim }} />
               <input
@@ -220,13 +220,13 @@ export default function CreateUserPage() {
             </div>
           </div>
 
-          {/* Role Radio Group */}
+          {/* Role Radio Group (2 Roles Shown to User: User and Accountant) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.2rem' }}>
             <label style={{ fontSize: '0.8rem', fontWeight: 600, color: theme.textMain }}>Role</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', backgroundColor: theme.bgSubtle, padding: '0.3rem', borderRadius: '6px', border: `1px solid ${theme.borderLight}` }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', backgroundColor: theme.bgSubtle, padding: '0.3rem', borderRadius: '6px', border: `1px solid ${theme.borderLight}` }}>
               <button
                 type="button"
-                onClick={() => setRole('USER')}
+                onClick={() => setRole('User')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -234,21 +234,21 @@ export default function CreateUserPage() {
                   gap: '0.45rem',
                   padding: '0.55rem 0.6rem',
                   borderRadius: '4px',
-                  border: role === 'USER' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
-                  backgroundColor: role === 'USER' ? theme.bgCard : 'transparent',
-                  color: role === 'USER' ? theme.textMain : theme.textMuted,
+                  border: role === 'User' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                  backgroundColor: role === 'User' ? theme.bgCard : 'transparent',
+                  color: role === 'User' ? theme.textMain : theme.textMuted,
                   fontSize: '0.82rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'USER' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'USER' ? theme.accentGold : 'transparent' }} />
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'User' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'User' ? theme.accentGold : 'transparent' }} />
                 <span>User</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setRole('ACCOUNTANT')}
+                onClick={() => setRole('Accountant')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -256,21 +256,21 @@ export default function CreateUserPage() {
                   gap: '0.45rem',
                   padding: '0.55rem 0.6rem',
                   borderRadius: '4px',
-                  border: role === 'ACCOUNTANT' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
-                  backgroundColor: role === 'ACCOUNTANT' ? theme.bgCard : 'transparent',
-                  color: role === 'ACCOUNTANT' ? theme.textMain : theme.textMuted,
+                  border: role === 'Accountant' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                  backgroundColor: role === 'Accountant' ? theme.bgCard : 'transparent',
+                  color: role === 'Accountant' ? theme.textMain : theme.textMuted,
                   fontSize: '0.82rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'ACCOUNTANT' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'ACCOUNTANT' ? theme.accentGold : 'transparent' }} />
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', border: `1.5px solid ${role === 'Accountant' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'Accountant' ? theme.accentGold : 'transparent' }} />
                 <span>Accountant</span>
               </button>
-              <button type="button" onClick={() => setRole('ADMIN')} style={{ padding: '0.55rem 0.6rem', borderRadius: '4px', border: role === 'ADMIN' ? `1px solid ${theme.borderLight}` : '1px solid transparent', backgroundColor: role === 'ADMIN' ? theme.bgCard : 'transparent', color: role === 'ADMIN' ? theme.textMain : theme.textMuted, fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
-                Admin
-              </button>
             </div>
+            <span style={{ fontSize: '0.7rem', color: theme.textMuted, marginTop: '0.1rem' }}>
+              💡 System Policy: Exactly 1 Administrator exists. You can create multiple Accountants and Users.
+            </span>
           </div>
 
           {/* Password */}
@@ -278,14 +278,14 @@ export default function CreateUserPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: theme.textMain }}>Password</label>
               <span style={{ fontSize: '0.7rem', color: isPasswordValid ? theme.success : theme.textDim }}>
-                &gt;8 chars, aA@
+                &gt;= 6 characters
               </span>
             </div>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <Lock size={15} style={{ position: 'absolute', left: '0.85rem', color: theme.textDim }} />
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Uppercase, lowercase & symbol"
+                placeholder="Enter password"
                 value={password}
                 onFocus={() => setFocusedField('password')}
                 onBlur={() => setFocusedField(null)}

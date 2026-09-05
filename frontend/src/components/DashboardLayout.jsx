@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import Navbar from './Navbar';
-import Sidebar from './Sidebar';
 
 export default function DashboardLayout() {
   const { theme } = useTheme();
@@ -19,22 +18,19 @@ export default function DashboardLayout() {
     >
       <Navbar />
 
-      <div style={{ display: 'flex', flex: 1 }}>
-        <Sidebar />
-
-        <main
-          style={{
-            flex: 1,
-            padding: '2rem',
-            maxWidth: '1300px',
-            margin: '0 auto',
-            width: '100%',
-            color: theme.textMain,
-          }}
-        >
-          <Outlet />
-        </main>
-      </div>
+      <main
+        style={{
+          flex: 1,
+          padding: '2rem 3rem',
+          maxWidth: '1440px',
+          margin: '0 auto',
+          width: '100%',
+          boxSizing: 'border-box',
+          color: theme.textMain,
+        }}
+      >
+        <Outlet />
+      </main>
     </div>
   );
 }

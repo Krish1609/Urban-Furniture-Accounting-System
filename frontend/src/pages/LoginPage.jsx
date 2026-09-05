@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { User as UserIcon, Lock, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -9,15 +9,28 @@ export default function LoginPage() {
   const { theme } = useTheme();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [loginId, setLoginId] = useState('admin_demo');
-  const [password, setPassword] = useState('Password@123');
+  const [role, setRole] = useState('Administrator'); // 'Administrator' | 'User'
+  const [loginId, setLoginId] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const [focusedField, setFocusedField] = useState(null);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setStatusMessage({ type: 'success', text: location.state.message });
+    }
+  }, [location]);
+
+  const handleRoleSwitch = (newRole) => {
+    setRole(newRole);
+    setStatusMessage(null);
+  };
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -30,14 +43,25 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const response = await login(loginId, password);
-      const userRole = response.role ?? response.user?.role ?? 'Administrator';
-      setStatusMessage({ type: 'success', text: `Welcome to FurniLedger! Signed in as ${userRole}.` });
-      navigate(userRole === 'User' || userRole === 'USER' ? '/my-invoices' : '/dashboard', { replace: true });
-    } catch (error) {
-      setStatusMessage({ type: 'error', text: error.message || 'Unable to sign in.' });
-    } finally {
+      const result = await login(loginId.trim(), password, role);
       setLoading(false);
+      const userRole = result?.role || result?.user?.role || role;
+      setStatusMessage({ type: 'success', text: `Welcome to FurniLedger! Signed in as ${result?.user?.name || userRole}.` });
+      setTimeout(() => {
+        if (userRole === 'Administrator') {
+          navigate('/admin');
+        } else if (userRole === 'User' || userRole === 'USER') {
+          navigate('/portal');
+        } else {
+          navigate('/dashboard');
+        }
+      }, 500);
+    } catch (err) {
+      setLoading(false);
+      setStatusMessage({
+        type: 'error',
+        text: err.message || 'Invalid Login ID or Password. Please check your credentials.'
+      });
     }
   };
 
@@ -78,6 +102,80 @@ export default function LoginPage() {
           </p>
         </div>
 
+        {/* Account Role Toggle: Administrator | Accountant | User */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '1.2rem' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: theme.textDim }}>
+            Account Role
+          </span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.35rem', backgroundColor: theme.bgSubtle, padding: '0.3rem', borderRadius: '6px', border: `1px solid ${theme.borderLight}` }}>
+            <button
+              type="button"
+              onClick={() => handleRoleSwitch('Administrator')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem',
+                padding: '0.55rem 0.35rem',
+                borderRadius: '4px',
+                border: role === 'Administrator' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                backgroundColor: role === 'Administrator' ? theme.bgCard : 'transparent',
+                color: role === 'Administrator' ? theme.textMain : theme.textMuted,
+                fontSize: '0.76rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: `1.5px solid ${role === 'Administrator' ? theme.accentGold : theme.borderLight}`, backgroundColor: role === 'Administrator' ? theme.accentGold : 'transparent' }} />
+              <span>Admin</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleRoleSwitch('Accountant')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem',
+                padding: '0.55rem 0.35rem',
+                borderRadius: '4px',
+                border: role === 'Accountant' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                backgroundColor: role === 'Accountant' ? theme.bgCard : 'transparent',
+                color: role === 'Accountant' ? theme.textMain : theme.textMuted,
+                fontSize: '0.76rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: `1.5px solid ${role === 'Accountant' ? '#38bdf8' : theme.borderLight}`, backgroundColor: role === 'Accountant' ? '#38bdf8' : 'transparent' }} />
+              <span>Accountant</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleRoleSwitch('User')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem',
+                padding: '0.55rem 0.35rem',
+                borderRadius: '4px',
+                border: role === 'User' ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                backgroundColor: role === 'User' ? theme.bgCard : 'transparent',
+                color: role === 'User' ? theme.textMain : theme.textMuted,
+                fontSize: '0.76rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: `1.5px solid ${role === 'User' ? '#34d399' : theme.borderLight}`, backgroundColor: role === 'User' ? '#34d399' : 'transparent' }} />
+              <span>User</span>
+            </button>
+          </div>
+        </div>
+
         {statusMessage && (
           <div
             style={{
@@ -111,6 +209,7 @@ export default function LoginPage() {
                 onBlur={() => setFocusedField(null)}
                 onChange={(e) => setLoginId(e.target.value)}
                 required
+                autoComplete="off"
                 style={{
                   width: '100%',
                   padding: '0.78rem 1rem 0.78rem 2.45rem',
@@ -137,6 +236,7 @@ export default function LoginPage() {
                 onBlur={() => setFocusedField(null)}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="new-password"
                 style={{
                   width: '100%',
                   padding: '0.78rem 1rem 0.78rem 2.45rem',

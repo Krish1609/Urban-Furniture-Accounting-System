@@ -10,7 +10,6 @@
     "start": "vite"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.115.0",
     "lucide-react": "^1.41.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
