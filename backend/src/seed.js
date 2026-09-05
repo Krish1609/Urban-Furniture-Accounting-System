@@ -638,25 +638,13 @@ export async function seedDatabase() {
 }
 
 seedDatabase()
-  .then(() => {
-    console.log('Seeding finished successfully.');
+  .then(async () => {
+    console.log('\n✅ Seeding finished successfully.');
+    await prisma.$disconnect();
     process.exit(0);
   })
-  .catch((err) => {
-    console.error('Seeding error:', err);
+  .catch(async (err) => {
+    console.error('❌ Seeding error:', err);
+    await prisma.$disconnect();
     process.exit(1);
   });
-
-// Auto-run if executed directly
-if (process.argv[1]?.endsWith('seed.js')) {
-  seedDatabase()
-    .then(async () => {
-      await prisma.$disconnect();
-      process.exit(0);
-    })
-    .catch(async (e) => {
-      console.error('❌ Seeding failed:', e);
-      await prisma.$disconnect();
-      process.exit(1);
-    });
-}
