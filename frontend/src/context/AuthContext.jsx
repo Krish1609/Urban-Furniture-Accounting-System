@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { isSupabaseConfigured, requireSupabase } from '../lib/supabase';
-import { getCurrentUser, signIn, signOut, signUp } from '../sevices/auth';
+import { getCurrentUser, signIn, signOut, signUp } from '../services/auth';
 
 const AuthContext = createContext();
 
