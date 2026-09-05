@@ -11,6 +11,7 @@ export default function DashboardLayout() {
       style={{
         minHeight: '100vh',
         backgroundColor: theme.bgApp,
+        color: theme.textMain,
         display: 'flex',
         flexDirection: 'column',
         fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -28,6 +29,7 @@ export default function DashboardLayout() {
             maxWidth: '1300px',
             margin: '0 auto',
             width: '100%',
+            color: theme.textMain,
           }}
         >
           <Outlet />
