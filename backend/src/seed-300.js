@@ -350,6 +350,7 @@ export async function seed300Entries() {
 
       let displayName = '';
       let email = '';
+      let website = '';
       let phone = `+91 ${98000 + (i * 17) % 9999} ${String(10000 + (i * 31) % 89999)}`;
       const loc = INDIAN_LOCATIONS[(i - 1) % INDIAN_LOCATIONS.length];
       const avatar = AVATAR_IMAGES[(i - 1) % AVATAR_IMAGES.length];
@@ -357,14 +358,23 @@ export async function seed300Entries() {
       if (isCompany) {
         const pref = COMPANY_PREFIXES[(i - 1) % COMPANY_PREFIXES.length];
         const suff = COMPANY_SUFFIXES[(i * 3) % COMPANY_SUFFIXES.length];
-        displayName = `${pref} ${suff} #${i}`;
-        const sanitized = displayName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 15);
-        email = `contact@${sanitized}.com`;
+        const cityTag = loc.city;
+        displayName = `${pref} ${suff} (${cityTag})`;
+        const domainSlug = pref.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
+        const roles = ['contact', 'sales', 'procurement', 'orders', 'info', 'billing', 'support', 'b2b'];
+        const role = roles[i % roles.length];
+        email = `${role}@${domainSlug}.in`;
+        website = `https://www.${domainSlug}.in`;
       } else {
         const first = FIRST_NAMES[(i - 1) % FIRST_NAMES.length];
         const last = LAST_NAMES[(i * 2) % LAST_NAMES.length];
         displayName = `${first} ${last}`;
-        email = `${first.toLowerCase()}.${last.toLowerCase()}${i}@example.com`;
+        const domains = ['gmail.com', 'outlook.com', 'yahoo.in', 'icloud.com', 'designstudio.in', 'architects.in', 'urbanhome.co.in'];
+        const domain = domains[i % domains.length];
+        const f = first.toLowerCase().replace(/[^a-z]/g, '');
+        const l = last.toLowerCase().replace(/[^a-z]/g, '');
+        email = (i % 3 === 0) ? `${f}.${l}@${domain}` : (i % 3 === 1) ? `${f}_${l}@${domain}` : `${f}${l[0]}@${domain}`;
+        website = `https://www.${f}${l}.me`;
       }
 
       await prisma.contacts.create({
@@ -372,12 +382,12 @@ export async function seed300Entries() {
           organization_id: org.id,
           contact_type: isVendor ? 'vendor' : 'customer',
           display_name: displayName,
-          legal_name: `${displayName} Registered Entity`,
+          legal_name: `${displayName} (Verified)`,
           tax_identifier: `27AA${String(1000 + i)}Z${String(5000 + i)}1Z${i % 9}`,
           email: email,
           phone: phone,
           image_url: avatar,
-          website: `https://www.${displayName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
+          website: website,
           is_active: true,
           contact_addresses: {
             create: {

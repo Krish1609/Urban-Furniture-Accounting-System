@@ -97,8 +97,14 @@ export default function ContactsPage() {
       return;
     }
 
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      alert('Please enter a valid email address (e.g. contact@company.in or name@gmail.com)');
+      return;
+    }
+
     const payload = {
       ...formData,
+      email: formData.email ? formData.email.trim().toLowerCase() : '',
       mobile: formData.phone,
       image: formData.imageUrl,
     };
@@ -318,7 +324,7 @@ export default function ContactsPage() {
                 <input
                   type="email"
                   required
-                  placeholder="e.g. openwood21@example.com (Unique Email)"
+                  placeholder="e.g. contact@godrejinterio.in or aarav.sharma@gmail.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   style={{

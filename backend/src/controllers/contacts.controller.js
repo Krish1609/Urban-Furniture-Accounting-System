@@ -74,12 +74,14 @@ export const createContact = async (req, res, next) => {
 
     const contactType = type.toLowerCase() === 'vendor' ? 'vendor' : type.toLowerCase() === 'both' ? 'both' : 'customer';
 
+    const cleanEmail = email ? email.trim().toLowerCase() : null;
+
     const newContact = await prisma.contacts.create({
       data: {
         organization_id: orgId,
         display_name: name,
         contact_type: contactType,
-        email: email || null,
+        email: cleanEmail,
         phone: mobile || phone || null,
         image_url: image || imageUrl || null,
         is_active: true
@@ -137,13 +139,14 @@ export const updateContact = async (req, res, next) => {
 
     const contactType = type ? (type.toLowerCase() === 'vendor' ? 'vendor' : type.toLowerCase() === 'both' ? 'both' : 'customer') : undefined;
     const isActive = status ? status === 'Active' : undefined;
+    const cleanEmail = email !== undefined ? (email ? email.trim().toLowerCase() : null) : undefined;
 
     const updated = await prisma.contacts.update({
       where: { id },
       data: {
         display_name: name || undefined,
         contact_type: contactType,
-        email: email !== undefined ? email : undefined,
+        email: cleanEmail,
         phone: (mobile !== undefined || phone !== undefined) ? (mobile || phone) : undefined,
         image_url: (image !== undefined || imageUrl !== undefined) ? (image || imageUrl || null) : undefined,
         is_active: isActive
