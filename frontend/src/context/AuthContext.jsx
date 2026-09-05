@@ -1,143 +1,109 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { isSupabaseConfigured, requireSupabase } from '../lib/supabase';
-import { signIn, signOut, signUp } from '../services/auth';
 
 const AuthContext = createContext();
 
-function normalizeRole(storedRole) {
-  const role = String(storedRole ?? '').toLowerCase();
-  return role === 'user' || role === 'contact_portal' ? 'User' : 'Administrator';
-}
-
-function normalizeUser(user, membershipRole) {
-  if (!user) return null;
-
-  return {
-    ...user,
-    name: user.user_metadata?.display_name ?? user.email,
-    loginId: user.user_metadata?.login_id ?? user.email,
-    email: user.email,
-    role: normalizeRole(user.user_metadata?.role ?? membershipRole),
-  };
-}
-
-async function loadUserWithRole(user) {
-  if (!user) return null;
-  if (user.user_metadata?.role) return normalizeUser(user);
-
-  const { data } = await requireSupabase()
-    .from('organization_memberships')
-    .select('role')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .limit(1)
-    .maybeSingle();
-
-  return normalizeUser(user, data?.role);
-}
-
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(
-    isSupabaseConfigured
-      ? null
-      : { name: 'Admin User', loginId: 'admin_demo', email: 'admin@urbanfurniture.com', role: 'Administrator' },
-  );
-  const [isAuthenticated, setIsAuthenticated] = useState(!isSupabaseConfigured);
-  const [loading, setLoading] = useState(isSupabaseConfigured);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('furniledger_user');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Error reading saved user:', e);
+    }
+    return null;
+  });
 
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return Boolean(localStorage.getItem('furniledger_token') && localStorage.getItem('furniledger_user'));
+  });
+
+  const [loading, setLoading] = useState(true);
+
+  // Verify auth session on load
   useEffect(() => {
-    if (!isSupabaseConfigured) return undefined;
-
     let mounted = true;
-    const client = requireSupabase();
-
-    client.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-      setCurrentUser(await loadUserWithRole(session?.user));
-      setIsAuthenticated(Boolean(session?.user));
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      setIsAuthenticated(Boolean(session?.user));
-      loadUserWithRole(session?.user).then((user) => {
-        if (mounted) setCurrentUser(user);
+    const token = localStorage.getItem('furniledger_token');
+    if (token) {
+      api.getMe().then((res) => {
+        if (!mounted) return;
+        if (res && res.user) {
+          const u = {
+            id: res.user.id,
+            name: res.user.name || res.user.loginId,
+            role: res.user.role,
+            loginId: res.user.loginId,
+            email: res.user.email,
+          };
+          setCurrentUser(u);
+          setIsAuthenticated(true);
+          localStorage.setItem('furniledger_user', JSON.stringify(u));
+        } else {
+          // Token is invalid/expired
+          localStorage.removeItem('furniledger_token');
+          localStorage.removeItem('furniledger_user');
+          setCurrentUser(null);
+          setIsAuthenticated(false);
+        }
+        setLoading(false);
+      }).catch(() => {
+        if (!mounted) return;
+        setLoading(false);
       });
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    } else {
+      setLoading(false);
+    }
+    return () => { mounted = false; };
   }, []);
 
-  const login = async (loginId, password, selectedRole = 'Administrator') => {
-    if (isSupabaseConfigured) {
-      const email = loginId.includes('@') ? loginId : undefined;
-      if (!email) {
-        throw new Error('Sign in with the email address used to create the account.');
-      }
-
-      const data = await signIn(email, password);
-      const user = await loadUserWithRole(data.user);
-      setCurrentUser(user);
+  const login = async (loginId, password, role = 'Administrator') => {
+    const res = await api.loginUser({ loginId, password, role });
+    if (res && res.user) {
+      const u = {
+        id: res.user.id,
+        name: res.user.name || res.user.loginId,
+        role: res.user.role,
+        loginId: res.user.loginId || loginId,
+        email: res.user.email,
+      };
+      setCurrentUser(u);
       setIsAuthenticated(true);
-      return { ...data, role: user.role };
+      localStorage.setItem('furniledger_user', JSON.stringify(u));
+      if (res.token) {
+        localStorage.setItem('furniledger_token', res.token);
+      }
+      return { user: u };
     }
-
-    const response = await api.loginUser({ loginId, password, role: selectedRole });
-    const apiUser = response.user;
-    if (!apiUser?.id || !apiUser?.role) {
-      throw new Error('Login response did not include a valid user role');
-    }
-
-    localStorage.setItem('furniledger_token', response.token);
-    const user = {
-      id: apiUser.id,
-      name: apiUser.display_name,
-      loginId: apiUser.login_id,
-      email: apiUser.email,
-      role: normalizeRole(apiUser.role),
-      organizationId: apiUser.organization_id,
-      contactId: apiUser.contact_id,
-    };
-    setCurrentUser(user);
-    setIsAuthenticated(true);
-    return { ...response, role: user.role };
+    throw new Error(res?.message || 'Authentication failed. Please check your credentials.');
   };
 
   const register = async (userData) => {
-    if (isSupabaseConfigured) {
-      return signUp({
-        email: userData.email,
-        password: userData.password,
-        loginId: userData.loginId,
-        displayName: userData.name,
-        role: userData.role,
-      });
-    }
-
-    return api.registerUser(userData);
+    const res = await api.registerUser(userData);
+    return res;
   };
 
-  const logout = async () => {
-    if (isSupabaseConfigured) await signOut();
+  const logout = () => {
     localStorage.removeItem('furniledger_token');
-    setIsAuthenticated(false);
+    localStorage.removeItem('furniledger_user');
     setCurrentUser(null);
-  };
-
-  const switchRole = (newRole) => {
-    setCurrentUser((previousUser) => (previousUser ? { ...previousUser, role: newRole } : previousUser));
+    setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAuthenticated, loading, login, register, logout, switchRole }}>
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        isAuthenticated,
+        loading,
+        login,
+        register,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export const useAuth = () => useContext(AuthContext);
+

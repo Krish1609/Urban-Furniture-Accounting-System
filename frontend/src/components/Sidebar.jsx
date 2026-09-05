@@ -7,7 +7,8 @@ import {
   BookOpen,
   PieChart,
   FileText,
-  Receipt
+  Receipt,
+  ShieldCheck
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -16,7 +17,11 @@ export default function Sidebar() {
   const { theme } = useTheme();
   const { currentUser } = useAuth();
 
+  const isAdmin = currentUser?.role === 'Administrator' || currentUser?.role === 'admin';
+  const isAccountant = currentUser?.role === 'Accountant' || currentUser?.role === 'accountant';
+
   const adminNavLinks = [
+    ...(isAdmin ? [{ to: '/admin', label: '👑 Super Admin Panel', icon: ShieldCheck }] : []),
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/contacts', label: 'Contacts Master', icon: Users },
     { to: '/products', label: 'Product Master', icon: Package },
@@ -30,7 +35,7 @@ export default function Sidebar() {
     { to: '/portal', label: 'My Invoices & Dues', icon: Receipt },
   ];
 
-  const links = ['ADMIN', 'ACCOUNTANT'].includes(currentUser?.role) ? adminNavLinks : userNavLinks;
+  const links = (isAdmin || isAccountant) ? adminNavLinks : userNavLinks;
 
   return (
     <aside

@@ -4,11 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "db:generate": "prisma generate",
-    "db:validate": "prisma validate",
-    "dev": "node src/index.js",
-    "dev:watch": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "seed": "node src/seed.js",
+    "test:api": "node src/test-all-apis.js"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",

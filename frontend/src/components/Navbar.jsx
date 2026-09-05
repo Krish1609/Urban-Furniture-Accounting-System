@@ -15,7 +15,9 @@ import {
   PieChart,
   BookOpen,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  LayoutGrid,
+  ArrowRight
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -28,13 +30,18 @@ export default function Navbar() {
   const location = useLocation();
   const navRef = useRef(null);
 
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  // Mega Menu State: opens on click as shown in flowchart
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+  const [highlightedCategory, setHighlightedCategory] = useState(null);
+
+  const currentRole = currentUser?.role || 'Administrator';
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (navRef.current && !navRef.current.contains(event.target)) {
-        setActiveDropdown(null);
+        setIsMegaMenuOpen(false);
+        setHighlightedCategory(null);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -43,7 +50,8 @@ export default function Navbar() {
 
   // Close dropdown on route change
   useEffect(() => {
-    setActiveDropdown(null);
+    setIsMegaMenuOpen(false);
+    setHighlightedCategory(null);
   }, [location.pathname]);
 
   const handleLogout = () => {
@@ -51,12 +59,18 @@ export default function Navbar() {
     navigate('/login');
   };
 
-  const toggleMenu = (menuName) => {
-    setActiveDropdown((prev) => (prev === menuName ? null : menuName));
+  const handleNavClick = (categoryId) => {
+    if (isMegaMenuOpen && highlightedCategory === categoryId) {
+      setIsMegaMenuOpen(false);
+      setHighlightedCategory(null);
+    } else {
+      setIsMegaMenuOpen(true);
+      setHighlightedCategory(categoryId);
+    }
   };
 
-  // Menu structure matching the user's exact flowchart
-  const navMenus = [
+  // 4 Core Navigation Columns exactly matching flowchart
+  const navCategories = [
     {
       id: 'sales',
       label: 'Sales',
@@ -97,6 +111,14 @@ export default function Navbar() {
         { label: 'Budget Report', path: '/budgets', state: { tab: 'budgets' }, icon: PieChart },
       ],
     },
+    ...(currentRole === 'Administrator' ? [{
+      id: 'admin',
+      label: 'Admin',
+      items: [
+        { label: 'User Management', path: '/users', icon: ShieldCheck },
+        { label: 'Create New User', path: '/create-user', icon: Users },
+      ],
+    }] : []),
   ];
 
   return (
@@ -111,141 +133,229 @@ export default function Navbar() {
         borderBottom: `1px solid ${theme.borderLight}`,
         position: 'sticky',
         top: 0,
-        zIndex: 50,
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.08)',
+        zIndex: 100,
+        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
       }}
     >
       {/* Left: Brand Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
-        <Link to={currentUser?.role === 'USER' ? '/my-invoices' : '/dashboard'} style={{ textDecoration: 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+        <Link to={currentRole === 'User' ? '/portal' : '/dashboard'} style={{ textDecoration: 'none' }}>
           <Logo theme={theme} isSmall />
         </Link>
 
-        {/* Center: Top Navigation Bar Formatted as requested (Sales | Purchase | Account | Report) */}
-        {['ADMIN', 'ACCOUNTANT'].includes(currentUser?.role) && (
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', position: 'relative' }}>
-            {navMenus.map((menu) => {
-              const isOpen = activeDropdown === menu.id;
+        {/* Center: Top Navigation Bar (Sales | Purchase | Account | Report) */}
+        {(currentRole === 'Administrator' || currentRole === 'Accountant') && (
+          <div style={{ position: 'relative' }}>
+            <nav style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              {navCategories.map((cat) => {
+                const isActive = isMegaMenuOpen && highlightedCategory === cat.id;
 
-              return (
-                <div key={menu.id} style={{ position: 'relative' }}>
+                return (
                   <button
+                    key={cat.id}
                     type="button"
-                    onClick={() => toggleMenu(menu.id)}
+                    onClick={() => handleNavClick(cat.id)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.35rem',
-                      padding: '0.55rem 1rem',
+                      padding: '0.5rem 0.95rem',
                       borderRadius: '6px',
                       fontSize: '0.86rem',
                       fontWeight: 600,
-                      backgroundColor: isOpen ? theme.bgSubtle : 'transparent',
-                      color: isOpen ? theme.accentGold : theme.textMain,
-                      border: isOpen ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                      backgroundColor: isActive ? theme.bgSubtle : 'transparent',
+                      color: isActive ? theme.accentGold : theme.textMain,
+                      border: isActive ? `1px solid ${theme.borderLight}` : '1px solid transparent',
                       cursor: 'pointer',
                       transition: 'all 120ms ease',
                     }}
                   >
-                    <span>{menu.label}</span>
+                    <span>{cat.label}</span>
                     <ChevronDown
                       size={14}
                       style={{
-                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0)',
+                        transform: isActive ? 'rotate(180deg)' : 'rotate(0)',
                         transition: 'transform 180ms ease',
-                        color: isOpen ? theme.accentGold : theme.textMuted,
+                        color: isActive ? theme.accentGold : theme.textMuted,
                       }}
                     />
                   </button>
+                );
+              })}
 
-                  {/* Dropdown Menu (Open on click) */}
-                  {isOpen && (
+              {/* All Modules Open-on-Click Quick Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMegaMenuOpen(!isMegaMenuOpen);
+                  setHighlightedCategory(null);
+                }}
+                title="Open Navigation Menu"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.5rem 0.85rem',
+                  borderRadius: '6px',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  backgroundColor: isMegaMenuOpen && !highlightedCategory ? theme.accentGoldSoft : 'transparent',
+                  color: isMegaMenuOpen && !highlightedCategory ? theme.accentGold : theme.textMuted,
+                  border: `1px solid ${isMegaMenuOpen && !highlightedCategory ? theme.accentGold : theme.borderLight}`,
+                  cursor: 'pointer',
+                  marginLeft: '0.5rem',
+                  transition: 'all 120ms ease',
+                }}
+              >
+                <LayoutGrid size={14} />
+                <span>All Modules</span>
+              </button>
+            </nav>
+
+            {/* FULL 4-COLUMN MEGA MATRIX NAVIGATION (Open on click - Right side box in diagram) */}
+            {isMegaMenuOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 10px)',
+                  left: 0,
+                  width: '820px',
+                  maxWidth: '92vw',
+                  backgroundColor: theme.bgCard,
+                  border: `1px solid ${theme.borderLight}`,
+                  borderRadius: '12px',
+                  padding: '1.4rem 1.6rem',
+                  boxShadow: '0 18px 45px rgba(0, 0, 0, 0.45)',
+                  zIndex: 200,
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '1.4rem',
+                }}
+              >
+                {navCategories.map((col) => {
+                  const isColHighlighted = highlightedCategory === col.id;
+
+                  return (
                     <div
+                      key={col.id}
                       style={{
-                        position: 'absolute',
-                        top: 'calc(100% + 8px)',
-                        left: 0,
-                        minWidth: '220px',
-                        backgroundColor: theme.bgCard,
-                        border: `1px solid ${theme.borderLight}`,
-                        borderRadius: '8px',
-                        padding: '0.5rem',
-                        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.35)',
-                        zIndex: 100,
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '0.2rem',
+                        gap: '0.4rem',
+                        padding: '0.6rem 0.75rem',
+                        borderRadius: '8px',
+                        backgroundColor: isColHighlighted ? theme.bgSubtle : 'transparent',
+                        border: isColHighlighted ? `1px solid ${theme.borderLight}` : '1px solid transparent',
+                        transition: 'all 140ms ease',
                       }}
                     >
+                      {/* Column Header */}
                       <div
                         style={{
-                          padding: '0.4rem 0.65rem 0.3rem',
-                          fontSize: '0.7rem',
+                          paddingBottom: '0.45rem',
+                          marginBottom: '0.35rem',
+                          borderBottom: `2px solid ${isColHighlighted ? theme.accentGold : theme.borderLight}`,
+                          fontSize: '0.95rem',
                           fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.08em',
-                          color: theme.accentGold,
-                          borderBottom: `1px solid ${theme.borderLight}`,
-                          marginBottom: '0.3rem',
+                          color: isColHighlighted ? theme.accentGold : theme.textMain,
+                          fontFamily: "'Lora', Georgia, serif",
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
                         }}
                       >
-                        {menu.label} Modules
+                        <span>{col.label}</span>
                       </div>
 
-                      {menu.items.map((item, idx) => {
-                        const Icon = item.icon;
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => {
-                              setActiveDropdown(null);
-                              navigate(item.path, { state: item.state });
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.65rem',
-                              padding: '0.55rem 0.75rem',
-                              borderRadius: '5px',
-                              fontSize: '0.82rem',
-                              fontWeight: 500,
-                              color: theme.textMain,
-                              backgroundColor: 'transparent',
-                              border: 'none',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                              width: '100%',
-                              transition: 'background-color 100ms ease',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = theme.bgSubtle;
-                              e.currentTarget.style.color = theme.accentGold;
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                              e.currentTarget.style.color = theme.textMain;
-                            }}
-                          >
-                            <Icon size={14} style={{ color: theme.accentGold, flexShrink: 0 }} />
-                            <span>{item.label}</span>
-                          </button>
-                        );
-                      })}
+                      {/* Column Items */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                        {col.items.map((item, idx) => {
+                          const Icon = item.icon;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setIsMegaMenuOpen(false);
+                                setHighlightedCategory(null);
+                                navigate(item.path, { state: item.state });
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.55rem',
+                                padding: '0.48rem 0.55rem',
+                                borderRadius: '5px',
+                                fontSize: '0.82rem',
+                                fontWeight: 500,
+                                color: theme.textMain,
+                                backgroundColor: 'transparent',
+                                border: 'none',
+                                textAlign: 'left',
+                                cursor: 'pointer',
+                                width: '100%',
+                                transition: 'all 100ms ease',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = theme.bgSubtle;
+                                e.currentTarget.style.color = theme.accentGold;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = theme.textMain;
+                              }}
+                            >
+                              <Icon size={14} style={{ color: theme.accentGold, flexShrink: 0 }} />
+                              <span>{item.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* User Portal Link for Regular Users */}
+        {currentRole === 'User' && (
+          <span style={{ fontSize: '0.84rem', fontWeight: 600, color: theme.accentGold }}>
+            Client &amp; Vendor Self-Service Portal
+          </span>
         )}
       </div>
 
       {/* Right Controls: Role, Theme, Logout */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-        {/* Role Switcher Pill */}
+        {/* Super Admin Console Jump (Administrator Only) */}
+        {currentRole === 'Administrator' && (
+          <button
+            type="button"
+            onClick={() => navigate('/admin')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.42rem 0.85rem',
+              backgroundColor: theme.accentGoldSoft,
+              border: `1px solid ${theme.accentGold}`,
+              borderRadius: '6px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              color: theme.accentGold,
+              cursor: 'pointer',
+              transition: 'all 120ms ease',
+            }}
+          >
+            <ShieldCheck size={14} />
+            <span>👑 Super Admin Console</span>
+          </button>
+        )}
+
+        {/* User Identity & Role Badge */}
         <div
-          title="Authenticated role"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -257,12 +367,11 @@ export default function Navbar() {
             fontSize: '0.78rem',
             fontWeight: 600,
             color: theme.accentGold,
-            cursor: 'default',
           }}
         >
-            {currentUser?.role === 'ADMIN' ? <ShieldCheck size={14} /> : <UserIcon size={14} />}
-            <span>Role: {currentUser?.role}</span>
-          </div>
+          {currentRole === 'Administrator' ? <ShieldCheck size={14} /> : <UserIcon size={14} />}
+          <span>{currentRole}: {currentUser?.name || currentUser?.loginId || 'User'}</span>
+        </div>
 
         {/* Theme Toggle */}
         <button
