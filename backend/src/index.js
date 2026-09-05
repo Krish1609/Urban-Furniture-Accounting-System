@@ -11,9 +11,9 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/api/health', (_request, response) => {
-  response.json({ status: 'ok', message: 'FurniLedger API is running' });
+  response.json({ status: 'ok', message: 'Urban Furniture API is running' });
 });
 
 app.listen(port, () => {
-  console.log(`FurniLedger API listening on http://localhost:${port}`);
+  console.log(`Urban Furniture API listening on http://localhost:${port}`);
 });
