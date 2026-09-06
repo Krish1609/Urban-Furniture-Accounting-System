@@ -23,6 +23,7 @@ import {
   UserCog
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import SearchBar from '../components/SearchBar';
 
 export default function UsersPage() {
   const { theme } = useTheme();
@@ -384,25 +385,13 @@ export default function UsersPage() {
         </div>
 
         {/* Search Input */}
-        <div style={{ position: 'relative', minWidth: '260px' }}>
-          <Search size={15} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: theme.textDim }} />
-          <input
-            type="text"
-            placeholder="Search by name, login, email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.55rem 1rem 0.55rem 2.4rem',
-              fontSize: '0.84rem',
-              backgroundColor: theme.bgSubtle,
-              color: theme.textMain,
-              border: `1px solid ${theme.borderLight}`,
-              borderRadius: '6px',
-              outline: 'none',
-            }}
-          />
-        </div>
+        <SearchBar
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onClear={() => setSearchTerm('')}
+          placeholder="Search by name, login, email..."
+          width="280px"
+        />
       </div>
 
       {/* 4. USER DIRECTORY TABLE */}

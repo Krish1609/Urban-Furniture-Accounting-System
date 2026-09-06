@@ -16,6 +16,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import SearchBar from '../components/SearchBar';
 
 export default function ProductsPage() {
   const { theme } = useTheme();
@@ -643,34 +644,13 @@ export default function ProductsPage() {
             </button>
 
             {/* Middle: Search Input */}
-            <div style={{ flex: 1, maxWidth: '460px', position: 'relative' }}>
-              <Search
-                size={16}
-                style={{
-                  position: 'absolute',
-                  left: '0.85rem',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: theme.textDim,
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Search products by name, category, type..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.6rem 1rem 0.6rem 2.4rem',
-                  borderRadius: '6px',
-                  border: `1px solid ${theme.borderLight}`,
-                  backgroundColor: theme.bgInput,
-                  color: theme.textMain,
-                  fontSize: '0.85rem',
-                  outline: 'none',
-                }}
-              />
-            </div>
+            <SearchBar
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onClear={() => setSearchQuery('')}
+              placeholder="Search products by name, category, type..."
+              width="460px"
+            />
 
             {/* Right: Back Button & View Switcher (List / Kanban) */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

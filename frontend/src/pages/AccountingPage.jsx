@@ -18,6 +18,7 @@ import {
   Check,
   X
 } from 'lucide-react';
+import SearchBar from '../components/SearchBar';
 
 export default function AccountingPage() {
   const { theme } = useTheme();
@@ -723,34 +724,13 @@ export default function AccountingPage() {
                   gap: '0.8rem',
                 }}
               >
-                <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
-                  <Search
-                    size={15}
-                    style={{
-                      position: 'absolute',
-                      left: '0.85rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: theme.textDim,
-                    }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search accounts by name or type..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem 0.85rem 0.5rem 2.2rem',
-                      borderRadius: '6px',
-                      border: `1px solid ${theme.borderLight}`,
-                      backgroundColor: theme.bgInput,
-                      color: theme.textMain,
-                      fontSize: '0.82rem',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
+                <SearchBar
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onClear={() => setSearchQuery('')}
+                  placeholder="Search accounts by name or type..."
+                  width="320px"
+                />
 
                 <div style={{ fontSize: '0.78rem', color: theme.textDim }}>
                   * All standard accounts are pre-configured in ledger
@@ -1083,32 +1063,13 @@ export default function AccountingPage() {
             /* 2.2 LIST VIEW: Journals Table */
             <div>
               {/* Search Bar */}
-              <div style={{ position: 'relative', width: '320px', maxWidth: '100%', marginBottom: '1.2rem' }}>
-                <Search
-                  size={15}
-                  style={{
-                    position: 'absolute',
-                    left: '0.85rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: theme.textDim,
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Search journals..."
+              <div style={{ marginBottom: '1.2rem' }}>
+                <SearchBar
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem 0.85rem 0.5rem 2.2rem',
-                    borderRadius: '6px',
-                    border: `1px solid ${theme.borderLight}`,
-                    backgroundColor: theme.bgInput,
-                    color: theme.textMain,
-                    fontSize: '0.82rem',
-                    outline: 'none',
-                  }}
+                  onClear={() => setSearchQuery('')}
+                  placeholder="Search journals..."
+                  width="320px"
                 />
               </div>
 
@@ -1638,32 +1599,13 @@ export default function AccountingPage() {
             /* 3.2 LIST VIEW: Journal Entries Table */
             <div>
               {/* Search Bar */}
-              <div style={{ position: 'relative', width: '320px', maxWidth: '100%', marginBottom: '1.2rem' }}>
-                <Search
-                  size={15}
-                  style={{
-                    position: 'absolute',
-                    left: '0.85rem',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: theme.textDim,
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Search journal entries..."
+              <div style={{ marginBottom: '1.2rem' }}>
+                <SearchBar
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.5rem 0.85rem 0.5rem 2.2rem',
-                    borderRadius: '6px',
-                    border: `1px solid ${theme.borderLight}`,
-                    backgroundColor: theme.bgInput,
-                    color: theme.textMain,
-                    fontSize: '0.82rem',
-                    outline: 'none',
-                  }}
+                  onClear={() => setSearchQuery('')}
+                  placeholder="Search journal entries..."
+                  width="320px"
                 />
               </div>
 

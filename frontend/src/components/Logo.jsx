@@ -1,36 +1,87 @@
-export default function Logo({ theme, isSmall = false }) {
-  const gold = theme.accentGold;
-  const text = theme.textMain;
+import { useTheme } from '../context/ThemeContext';
+
+export default function Logo({ theme: propTheme, isSmall = false, showText = true }) {
+  let ctxTheme = null;
+  let themeMode = 'dark';
+  try {
+    const ctx = useTheme();
+    if (ctx) {
+      ctxTheme = ctx.theme;
+      themeMode = ctx.themeMode;
+    }
+  } catch (e) {
+    // fallback if outside ThemeProvider
+  }
+
+  const theme = propTheme || ctxTheme || {};
+  const gold = theme?.accentGold || '#BFA07C';
+  const text = theme?.textMain || '#FFFFFF';
+  const isLight = themeMode === 'light';
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-      <div 
-        style={{ 
-          width: isSmall ? '34px' : '48px', 
-          height: isSmall ? '34px' : '48px', 
-          display: 'grid',
-          placeItems: 'center'
+    <div style={{ display: 'flex', alignItems: 'center', gap: isSmall ? '0.7rem' : '0.9rem' }}>
+      {/* Official Brand Logo Icon Mark from Design.com */}
+      <div
+        style={{
+          width: isSmall ? '42px' : '56px',
+          height: isSmall ? '42px' : '56px',
+          borderRadius: '10px',
+          backgroundColor: '#FAF8F5',
+          border: `1.5px solid ${isLight ? '#E2E8F0' : 'rgba(226, 194, 155, 0.35)'}`,
+          boxShadow: isSmall
+            ? '0 2px 6px rgba(0, 0, 0, 0.08)'
+            : '0 4px 16px rgba(0, 0, 0, 0.12)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          padding: '3px',
+          flexShrink: 0,
+          transition: 'transform 180ms ease, box-shadow 180ms ease',
         }}
       >
-        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-          <rect x="2" y="2" width="60" height="60" rx="12" stroke={theme.borderLight} strokeWidth="1.5" fill={theme.bgSubtle} />
-          <path d="M20 22C20 18.6863 22.6863 16 26 16H38C41.3137 16 44 18.6863 44 22V36H20V22Z" stroke={gold} strokeWidth="2.2" strokeLinecap="round" />
-          <path d="M17 36H47C48.6569 36 50 37.3431 50 39C50 40.6569 48.6569 42 47 42H17C15.3431 42 14 40.6569 14 39C14 37.3431 15.3431 36 17 36Z" fill={gold} opacity="0.2" stroke={gold} strokeWidth="2" />
-          <path d="M20 42L17 50M44 42L47 50" stroke={gold} strokeWidth="2.2" strokeLinecap="round" />
-          <line x1="26" y1="23" x2="38" y2="23" stroke={gold} strokeWidth="1.8" strokeLinecap="round" />
-          <line x1="26" y1="28" x2="38" y2="28" stroke={gold} strokeWidth="1.8" strokeLinecap="round" />
-          <line x1="26" y1="33" x2="34" y2="33" stroke={gold} strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
+        <img
+          src="/logo.png"
+          alt="FurniLedger Logo"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            display: 'block',
+          }}
+        />
       </div>
 
-      <div>
-        <span style={{ fontFamily: "'Lora', Georgia, serif", fontSize: isSmall ? '1.15rem' : '1.45rem', fontWeight: 600, letterSpacing: '-0.02em', color: text, display: 'block', lineHeight: 1.1 }}>
-          FurniLedger
-        </span>
-        <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: gold, display: 'block' }}>
-          Accounting System
-        </span>
-      </div>
+      {showText && (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span
+            style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontSize: isSmall ? '1.22rem' : '1.55rem',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              color: text,
+              display: 'block',
+              lineHeight: 1.1,
+            }}
+          >
+            FurniLedger
+          </span>
+          <span
+            style={{
+              fontSize: isSmall ? '0.62rem' : '0.72rem',
+              fontWeight: 700,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              color: gold,
+              display: 'block',
+              marginTop: '2px',
+            }}
+          >
+            Accounting System
+          </span>
+        </div>
+      )}
     </div>
   );
 }

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import { openRazorpayCheckout } from '../services/razorpay';
+import SearchBar from '../components/SearchBar';
 
 export default function OrdersPage() {
   const { theme } = useTheme();
@@ -1213,27 +1214,13 @@ export default function OrdersPage() {
                   <span>New Purchase Order</span>
                 </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <div style={{ position: 'relative', width: '320px' }}>
-                    <Search size={15} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: theme.textDim }} />
-                    <input
-                      type="text"
-                      placeholder="Search Purchase Orders..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem 0.8rem 0.5rem 2.2rem',
-                        borderRadius: '6px',
-                        border: `1px solid ${theme.borderLight}`,
-                        backgroundColor: theme.bgInput,
-                        color: theme.textMain,
-                        fontSize: '0.84rem',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-                </div>
+                <SearchBar
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onClear={() => setSearchQuery('')}
+                  placeholder="Search Purchase Orders (No., Vendor, Status)..."
+                  width="340px"
+                />
               </div>
 
               <div style={{ overflowX: 'auto', border: `1px solid ${theme.borderLight}`, borderRadius: '8px' }}>
@@ -1249,14 +1236,39 @@ export default function OrdersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {purchaseOrdersList.length === 0 ? (
+                    {purchaseOrdersList
+                      .filter((po) => {
+                        if (!searchQuery.trim()) return true;
+                        const q = searchQuery.toLowerCase();
+                        return (
+                          (po.id || '').toLowerCase().includes(q) ||
+                          (po.contactName || '').toLowerCase().includes(q) ||
+                          (po.status || '').toLowerCase().includes(q) ||
+                          (po.date || '').toLowerCase().includes(q) ||
+                          String(po.totalAmount || po.amount || '').toLowerCase().includes(q)
+                        );
+                      }).length === 0 ? (
                       <tr>
                         <td colSpan={6} style={{ padding: '2.5rem', textAlign: 'center', color: theme.textMuted }}>
-                          No Purchase Orders recorded. Click <strong>[New Purchase Order]</strong> to create one.
+                          {searchQuery
+                            ? `No Purchase Orders matching "${searchQuery}".`
+                            : <span>No Purchase Orders recorded. Click <strong>[New Purchase Order]</strong> to create one.</span>}
                         </td>
                       </tr>
                     ) : (
-                      purchaseOrdersList.map((po) => (
+                      purchaseOrdersList
+                        .filter((po) => {
+                          if (!searchQuery.trim()) return true;
+                          const q = searchQuery.toLowerCase();
+                          return (
+                            (po.id || '').toLowerCase().includes(q) ||
+                            (po.contactName || '').toLowerCase().includes(q) ||
+                            (po.status || '').toLowerCase().includes(q) ||
+                            (po.date || '').toLowerCase().includes(q) ||
+                            String(po.totalAmount || po.amount || '').toLowerCase().includes(q)
+                          );
+                        })
+                        .map((po) => (
                         <tr
                           key={po.id}
                           style={{ borderBottom: `1px solid ${theme.borderLight}`, color: theme.textMain, cursor: 'pointer' }}
@@ -1792,27 +1804,13 @@ export default function OrdersPage() {
                   <span>New Vendor Bill</span>
                 </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <div style={{ position: 'relative', width: '320px' }}>
-                    <Search size={15} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: theme.textDim }} />
-                    <input
-                      type="text"
-                      placeholder="Search Vendor Bills..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem 0.8rem 0.5rem 2.2rem',
-                        borderRadius: '6px',
-                        border: `1px solid ${theme.borderLight}`,
-                        backgroundColor: theme.bgInput,
-                        color: theme.textMain,
-                        fontSize: '0.84rem',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-                </div>
+                <SearchBar
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onClear={() => setSearchQuery('')}
+                  placeholder="Search Vendor Bills (No., Vendor, Status)..."
+                  width="340px"
+                />
               </div>
 
               <div style={{ overflowX: 'auto', border: `1px solid ${theme.borderLight}`, borderRadius: '8px' }}>
@@ -1829,14 +1827,41 @@ export default function OrdersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {vendorBillsList.length === 0 ? (
+                    {vendorBillsList
+                      .filter((bill) => {
+                        if (!searchQuery.trim()) return true;
+                        const q = searchQuery.toLowerCase();
+                        return (
+                          (bill.id || '').toLowerCase().includes(q) ||
+                          (bill.contactName || '').toLowerCase().includes(q) ||
+                          (bill.status || '').toLowerCase().includes(q) ||
+                          (bill.date || '').toLowerCase().includes(q) ||
+                          (bill.reference || '').toLowerCase().includes(q) ||
+                          String(bill.amount || '').toLowerCase().includes(q)
+                        );
+                      }).length === 0 ? (
                       <tr>
                         <td colSpan={7} style={{ padding: '2.5rem', textAlign: 'center', color: theme.textMuted }}>
-                          No Vendor Bills found. Click <strong>[New Vendor Bill]</strong> or convert from a Purchase Order.
+                          {searchQuery
+                            ? `No Vendor Bills matching "${searchQuery}".`
+                            : <span>No Vendor Bills found. Click <strong>[New Vendor Bill]</strong> or convert from a Purchase Order.</span>}
                         </td>
                       </tr>
                     ) : (
-                      vendorBillsList.map((bill) => {
+                      vendorBillsList
+                        .filter((bill) => {
+                          if (!searchQuery.trim()) return true;
+                          const q = searchQuery.toLowerCase();
+                          return (
+                            (bill.id || '').toLowerCase().includes(q) ||
+                            (bill.contactName || '').toLowerCase().includes(q) ||
+                            (bill.status || '').toLowerCase().includes(q) ||
+                            (bill.date || '').toLowerCase().includes(q) ||
+                            (bill.reference || '').toLowerCase().includes(q) ||
+                            String(bill.amount || '').toLowerCase().includes(q)
+                          );
+                        })
+                        .map((bill) => {
                         const totalNum = Number(bill.amount) || 6000;
                         const dueNum = bill.amountDue !== undefined ? Number(bill.amountDue) : (bill.status === 'Paid' ? 0 : totalNum);
 
@@ -2593,27 +2618,13 @@ export default function OrdersPage() {
                   <span>New Sales Order</span>
                 </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <div style={{ position: 'relative', width: '320px' }}>
-                    <Search size={15} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: theme.textDim }} />
-                    <input
-                      type="text"
-                      placeholder="Search Sales Orders..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem 0.8rem 0.5rem 2.2rem',
-                        borderRadius: '6px',
-                        border: `1px solid ${theme.borderLight}`,
-                        backgroundColor: theme.bgInput,
-                        color: theme.textMain,
-                        fontSize: '0.84rem',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-                </div>
+                <SearchBar
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onClear={() => setSearchQuery('')}
+                  placeholder="Search Sales Orders (No., Customer, Status)..."
+                  width="340px"
+                />
               </div>
 
               <div style={{ overflowX: 'auto', border: `1px solid ${theme.borderLight}`, borderRadius: '8px' }}>
@@ -2630,11 +2641,38 @@ export default function OrdersPage() {
                   </thead>
                   <tbody>
                     {salesOrdersList
-                      .filter((so) =>
-                        (so.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        (so.contactName || '').toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                      .map((so) => (
+                      .filter((so) => {
+                        if (!searchQuery.trim()) return true;
+                        const q = searchQuery.toLowerCase();
+                        return (
+                          (so.id || '').toLowerCase().includes(q) ||
+                          (so.contactName || '').toLowerCase().includes(q) ||
+                          (so.status || '').toLowerCase().includes(q) ||
+                          (so.date || '').toLowerCase().includes(q) ||
+                          String(so.totalAmount || so.amount || '').toLowerCase().includes(q)
+                        );
+                      }).length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: '2.5rem', textAlign: 'center', color: theme.textMuted }}>
+                          {searchQuery
+                            ? `No Sales Orders matching "${searchQuery}".`
+                            : <span>No Sales Orders recorded. Click <strong>[New Sales Order]</strong> to create one.</span>}
+                        </td>
+                      </tr>
+                    ) : (
+                      salesOrdersList
+                        .filter((so) => {
+                          if (!searchQuery.trim()) return true;
+                          const q = searchQuery.toLowerCase();
+                          return (
+                            (so.id || '').toLowerCase().includes(q) ||
+                            (so.contactName || '').toLowerCase().includes(q) ||
+                            (so.status || '').toLowerCase().includes(q) ||
+                            (so.date || '').toLowerCase().includes(q) ||
+                            String(so.totalAmount || so.amount || '').toLowerCase().includes(q)
+                          );
+                        })
+                        .map((so) => (
                         <tr
                           key={so.id}
                           style={{
@@ -2724,13 +2762,7 @@ export default function OrdersPage() {
                             </div>
                           </td>
                         </tr>
-                      ))}
-                    {salesOrdersList.length === 0 && (
-                      <tr>
-                        <td colSpan={6} style={{ padding: '2.5rem', textAlign: 'center', color: theme.textMuted }}>
-                          No Sales Orders found. Click <strong>+ New Sales Order</strong> to create one.
-                        </td>
-                      </tr>
+                      ))
                     )}
                   </tbody>
                 </table>
@@ -3207,27 +3239,13 @@ export default function OrdersPage() {
                   <span>New Customer Invoice</span>
                 </button>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <div style={{ position: 'relative', width: '320px' }}>
-                    <Search size={15} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: theme.textDim }} />
-                    <input
-                      type="text"
-                      placeholder="Search Customer Invoices..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '0.5rem 0.8rem 0.5rem 2.2rem',
-                        borderRadius: '6px',
-                        border: `1px solid ${theme.borderLight}`,
-                        backgroundColor: theme.bgInput,
-                        color: theme.textMain,
-                        fontSize: '0.84rem',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
-                </div>
+                <SearchBar
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onClear={() => setSearchQuery('')}
+                  placeholder="Search Customer Invoices (No., Customer, Ref)..."
+                  width="340px"
+                />
               </div>
 
               <div style={{ overflowX: 'auto', border: `1px solid ${theme.borderLight}`, borderRadius: '8px' }}>
@@ -3247,12 +3265,42 @@ export default function OrdersPage() {
                   </thead>
                   <tbody>
                     {customerInvoicesList
-                      .filter((inv) =>
-                        (inv.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        (inv.contactName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        (inv.reference || '').toLowerCase().includes(searchQuery.toLowerCase())
-                      )
-                      .map((inv) => {
+                      .filter((inv) => {
+                        if (!searchQuery.trim()) return true;
+                        const q = searchQuery.toLowerCase();
+                        return (
+                          (inv.id || '').toLowerCase().includes(q) ||
+                          (inv.contactName || '').toLowerCase().includes(q) ||
+                          (inv.reference || '').toLowerCase().includes(q) ||
+                          (inv.orderId || '').toLowerCase().includes(q) ||
+                          (inv.status || '').toLowerCase().includes(q) ||
+                          (inv.date || '').toLowerCase().includes(q) ||
+                          String(inv.amount || '').toLowerCase().includes(q)
+                        );
+                      }).length === 0 ? (
+                      <tr>
+                        <td colSpan={9} style={{ padding: '2.5rem', textAlign: 'center', color: theme.textMuted }}>
+                          {searchQuery
+                            ? `No Customer Invoices matching "${searchQuery}".`
+                            : <span>No Customer Invoices recorded. Click <strong>[New Customer Invoice]</strong> to create one.</span>}
+                        </td>
+                      </tr>
+                    ) : (
+                      customerInvoicesList
+                        .filter((inv) => {
+                          if (!searchQuery.trim()) return true;
+                          const q = searchQuery.toLowerCase();
+                          return (
+                            (inv.id || '').toLowerCase().includes(q) ||
+                            (inv.contactName || '').toLowerCase().includes(q) ||
+                            (inv.reference || '').toLowerCase().includes(q) ||
+                            (inv.orderId || '').toLowerCase().includes(q) ||
+                            (inv.status || '').toLowerCase().includes(q) ||
+                            (inv.date || '').toLowerCase().includes(q) ||
+                            String(inv.amount || '').toLowerCase().includes(q)
+                          );
+                        })
+                        .map((inv) => {
                         const due = inv.amountDue !== undefined ? Number(inv.amountDue) : (Number(inv.amount) - (Number(inv.paidAmount) || 0));
                         const statusBadge = due === 0 ? 'Paid' : (inv.paidViaCash > 0 || inv.paidViaBank > 0 || inv.paidAmount > 0 ? 'Partial' : 'Not Paid');
 
@@ -3350,13 +3398,7 @@ export default function OrdersPage() {
                             </td>
                           </tr>
                         );
-                      })}
-                    {customerInvoicesList.length === 0 && (
-                      <tr>
-                        <td colSpan={9} style={{ padding: '2.5rem', textAlign: 'center', color: theme.textMuted }}>
-                          No Customer Invoices found. Click <strong>+ New Customer Invoice</strong> or convert a Sales Order.
-                        </td>
-                      </tr>
+                      })
                     )}
                   </tbody>
                 </table>
