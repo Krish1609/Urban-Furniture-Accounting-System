@@ -1,8 +1,12 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma.js';
+import { sendPasswordResetOtpEmail } from '../services/email.service.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'furniledger-secret-jwt-key-2025-secure';
+
+// In-memory OTP storage for password resets: email -> { otp, expiresAt, attempts, userId }
+const resetOtpStore = new Map();
 
 export const register = async (req, res, next) => {
   try {
@@ -532,4 +536,176 @@ export const deleteUser = async (req, res, next) => {
 };
 
 export const getAllUsers = getUsers;
+
+/**
+ * Initiate Forgot Password - Generate 6-digit OTP & send via SMTP
+ */
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { loginOrEmail } = req.body;
+
+    if (!loginOrEmail || !loginOrEmail.trim()) {
+      return res.status(400).json({ success: false, message: 'Please provide your Login ID or registered Email address' });
+    }
+
+    const query = loginOrEmail.trim();
+
+    // 1. Locate user in MySQL app_users
+    const user = await prisma.app_users.findFirst({
+      where: {
+        OR: [
+          { email: query.toLowerCase() },
+          { login_id: query }
+        ],
+        is_active: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No registered account found matching this Login ID or Email'
+      });
+    }
+
+    if (!user.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'This user account does not have a registered email address'
+      });
+    }
+
+    // 2. Generate secure 6-digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+
+    // 3. Save in OTP store
+    resetOtpStore.set(user.email.toLowerCase(), {
+      otp: otpCode,
+      expiresAt,
+      attempts: 0,
+      userId: user.id,
+      loginId: user.login_id
+    });
+
+    // Also store by loginId for convenience
+    resetOtpStore.set(user.login_id.toLowerCase(), {
+      otp: otpCode,
+      expiresAt,
+      attempts: 0,
+      userId: user.id,
+      email: user.email
+    });
+
+    // 4. Send email via SMTP (furniledger@gmail.com)
+    try {
+      await sendPasswordResetOtpEmail({
+        toEmail: user.email,
+        userName: user.display_name || user.login_id,
+        otpCode
+      });
+    } catch (mailErr) {
+      console.error('Failed to dispatch SMTP email:', mailErr);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send OTP email via SMTP. Please check server mail settings.'
+      });
+    }
+
+    // 5. Mask email for secure display
+    const parts = user.email.split('@');
+    const maskedName = parts[0].length <= 2 
+      ? parts[0] + '***' 
+      : parts[0][0] + '***' + parts[0].slice(-1);
+    const maskedEmail = `${maskedName}@${parts[1]}`;
+
+    res.json({
+      success: true,
+      message: `A 6-digit verification code has been dispatched to ${maskedEmail}`,
+      maskedEmail,
+      loginId: user.login_id
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Verify OTP and Set New Password
+ */
+export const verifyResetOtp = async (req, res, next) => {
+  try {
+    const { loginOrEmail, otp, newPassword } = req.body;
+
+    if (!loginOrEmail || !otp || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Login ID / Email, OTP code, and New Password are required'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+
+    const key = loginOrEmail.trim().toLowerCase();
+    const stored = resetOtpStore.get(key);
+
+    if (!stored) {
+      return res.status(400).json({
+        success: false,
+        message: 'No OTP request found for this account or it has expired. Please request a new code.'
+      });
+    }
+
+    // Check expiry
+    if (Date.now() > stored.expiresAt) {
+      resetOtpStore.delete(key);
+      return res.status(400).json({
+        success: false,
+        message: 'Verification code has expired. Please request a new code.'
+      });
+    }
+
+    // Rate limiting attempts
+    if (stored.attempts >= 5) {
+      resetOtpStore.delete(key);
+      return res.status(429).json({
+        success: false,
+        message: 'Too many incorrect attempts. Please request a new OTP code.'
+      });
+    }
+
+    // Check OTP
+    if (stored.otp !== otp.trim()) {
+      stored.attempts += 1;
+      return res.status(400).json({
+        success: false,
+        message: `Invalid OTP code. ${5 - stored.attempts} attempts remaining.`
+      });
+    }
+
+    // Hash new password and update in MySQL
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.app_users.update({
+      where: { id: stored.userId },
+      data: { password_hash: hashedPassword }
+    });
+
+    // Clear used OTP
+    resetOtpStore.delete(key);
+    if (stored.email) resetOtpStore.delete(stored.email.toLowerCase());
+    if (stored.loginId) resetOtpStore.delete(stored.loginId.toLowerCase());
+
+    res.json({
+      success: true,
+      message: 'Your password has been successfully updated! You can now log in.'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 

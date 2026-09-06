@@ -58,6 +58,32 @@ export const api = {
     }
   },
 
+  async forgotPassword(loginOrEmail) {
+    const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ loginOrEmail }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.success === false) {
+      throw new Error(data.message || 'Failed to send password reset code');
+    }
+    return data;
+  },
+
+  async verifyResetOtp({ loginOrEmail, otp, newPassword }) {
+    const res = await fetch(`${API_BASE_URL}/auth/verify-reset-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ loginOrEmail, otp, newPassword }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.success === false) {
+      throw new Error(data.message || 'Failed to verify OTP and reset password');
+    }
+    return data;
+  },
+
   async getAllUsers() {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/users`, { headers: getHeaders() });
