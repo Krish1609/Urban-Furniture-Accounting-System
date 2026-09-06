@@ -27,6 +27,7 @@ import {
   Wallet
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import { openRazorpayCheckout } from '../services/razorpay';
 
 export default function OrdersPage() {
   const { theme } = useTheme();
@@ -874,7 +875,7 @@ export default function OrdersPage() {
       partner: target.customerName || target.contactName || 'Mr. Rahul',
       amount: due,
       date: new Date().toISOString().split('T')[0],
-      paymentVia: 'Cash', // 'Cash' | 'HDFC Bank'
+      paymentVia: 'Razorpay', // 'Razorpay' | 'Cash' | 'HDFC Bank'
       memo: `Settlement for ${target.id}`
     });
   };
@@ -884,9 +885,46 @@ export default function OrdersPage() {
     e.preventDefault();
     if (!customerPaymentModalData || !customerPaymentModalData.amount) return;
 
+    const payNum = Number(customerPaymentModalData.amount) || 0;
+    const isRazorpay = customerPaymentModalData.paymentVia.toLowerCase().includes('razorpay');
+
+    if (isRazorpay) {
+      openRazorpayCheckout({
+        amount: payNum,
+        invoiceId: customerPaymentModalData.invoiceId,
+        customerName: customerPaymentModalData.partner,
+        description: `Invoice settlement for ${customerPaymentModalData.invoiceId}`,
+        onSuccess: async (res) => {
+          const updatedPaymentData = {
+            ...customerPaymentModalData,
+            paymentVia: 'Razorpay',
+            memo: `${customerPaymentModalData.memo || 'Invoice payment'} (Razorpay ID: ${res.razorpay_payment_id})`
+          };
+
+          await registerInvoicePayment(customerPaymentModalData.invoiceId, updatedPaymentData);
+
+          setInvoiceFormData((prev) => {
+            const newBank = Number(prev.paidViaBank || 0) + payNum;
+            const totalPaid = Number(prev.paidViaCash || 0) + newBank;
+            const newDue = Math.max(0, Number(prev.amount) - totalPaid);
+            return {
+              ...prev,
+              paidViaBank: newBank,
+              amountDue: newDue,
+              status: newDue === 0 ? 'Paid' : 'Partial'
+            };
+          });
+
+          showToast(`Payment of ₹${payNum.toLocaleString()} received via Razorpay (Txn ID: ${res.razorpay_payment_id})!`);
+          setCustomerPaymentModalData(null);
+          refreshData();
+        }
+      });
+      return;
+    }
+
     await registerInvoicePayment(customerPaymentModalData.invoiceId, customerPaymentModalData);
 
-    const payNum = Number(customerPaymentModalData.amount) || 0;
     const isCash = customerPaymentModalData.paymentVia.toLowerCase().includes('cash');
 
     setInvoiceFormData((prev) => {
@@ -4204,8 +4242,10 @@ export default function OrdersPage() {
                     outline: 'none',
                   }}
                 >
+                  <option value="Razorpay Payouts">⚡ Razorpay Payouts (Direct Bank Transfer)</option>
                   <option value="Cash">Cash (Cash on Hand - 1010)</option>
                   <option value="HDFC Bank">HDFC Bank (Operating Bank A/c - 1020)</option>
+                  <option value="ICICI Bank">ICICI Corporate Bank (1020)</option>
                 </select>
               </div>
 
@@ -4626,8 +4666,10 @@ export default function OrdersPage() {
                     outline: 'none',
                   }}
                 >
+                  <option value="Razorpay">⚡ Razorpay (UPI, Google Pay, Credit/Debit Cards, NetBanking)</option>
                   <option value="Cash">Cash (Cash on Hand - 1010)</option>
                   <option value="HDFC Bank">HDFC Bank (Operating Bank A/c - 1020)</option>
+                  <option value="ICICI Bank">ICICI Corporate Bank (1020)</option>
                 </select>
               </div>
 

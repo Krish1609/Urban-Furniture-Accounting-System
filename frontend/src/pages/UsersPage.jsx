@@ -476,9 +476,19 @@ export default function UsersPage() {
                               fontWeight: 700,
                               fontSize: '0.9rem',
                               border: `1px solid ${isAdmin ? theme.accentGold : isAccountant ? '#38bdf8' : '#34d399'}`,
+                              overflow: 'hidden',
+                              flexShrink: 0,
                             }}
                           >
-                            {(user.name || user.loginId || 'U').charAt(0).toUpperCase()}
+                            {user.avatar || user.imageUrl || user.image ? (
+                              <img
+                                src={user.avatar || user.imageUrl || user.image}
+                                alt={user.name}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              (user.name || user.loginId || 'U').charAt(0).toUpperCase()
+                            )}
                           </div>
                           <div>
                             <span style={{ fontWeight: 600, color: theme.textMain, display: 'block' }}>

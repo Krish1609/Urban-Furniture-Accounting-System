@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAccounting } from '../context/AccountingContext';
 import { Receipt, CreditCard, CheckCircle2, AlertCircle, Eye, Printer, ShieldCheck } from 'lucide-react';
 import Modal from '../components/Modal';
+import { openRazorpayCheckout } from '../services/razorpay';
 
 export default function UserPortalPage() {
   const { theme } = useTheme();
@@ -12,7 +13,7 @@ export default function UserPortalPage() {
 
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [payModalInvoice, setPayModalInvoice] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('HDFC Bank');
+  const [paymentMethod, setPaymentMethod] = useState('Razorpay');
   const [successToast, setSuccessToast] = useState(null);
 
   // Invoices list safe filtering
@@ -35,6 +36,24 @@ export default function UserPortalPage() {
   const handleExecutePayment = (e) => {
     e.preventDefault();
     if (!payModalInvoice) return;
+
+    if (paymentMethod.includes('Razorpay')) {
+      openRazorpayCheckout({
+        amount: Number(payModalInvoice.amount) || 0,
+        invoiceId: payModalInvoice.id,
+        customerName: payModalInvoice.contactName || currentUser?.name || 'Customer',
+        customerEmail: currentUser?.email || 'customer@urbanfurniture.com',
+        customerPhone: currentUser?.phone || '9820145892',
+        description: `Settlement for invoice ${payModalInvoice.id}`,
+        onSuccess: (res) => {
+          payInvoice(payModalInvoice.id, 'Razorpay');
+          setSuccessToast(`Payment of ₹${(Number(payModalInvoice.amount) || 0).toLocaleString()} received via Razorpay (Txn ID: ${res.razorpay_payment_id})!`);
+          setPayModalInvoice(null);
+          setTimeout(() => setSuccessToast(null), 5000);
+        }
+      });
+      return;
+    }
 
     payInvoice(payModalInvoice.id, paymentMethod);
     setSuccessToast(`Payment of ₹${(Number(payModalInvoice.amount) || 0).toLocaleString()} for ${payModalInvoice.id} processed successfully!`);
@@ -311,6 +330,7 @@ export default function UserPortalPage() {
                 outline: 'none',
               }}
             >
+              <option value="Razorpay">⚡ Razorpay (UPI, Google Pay, Credit/Debit Cards, NetBanking)</option>
               <option value="HDFC Bank">HDFC Bank (NEFT / RTGS / Online Banking)</option>
               <option value="ICICI Bank">ICICI Corporate Bank</option>
               <option value="Petty Cash">Cash Payment</option>

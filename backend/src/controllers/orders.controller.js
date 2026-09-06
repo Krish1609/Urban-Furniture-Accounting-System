@@ -197,7 +197,10 @@ export const convertToBill = async (req, res, next) => {
 
     // 3. Create Automatic Double-Entry in Purchase Journal
     const purchJournal = await prisma.journals.findFirst({
-      where: { organization_id: orgId, journal_type: 'purchase' }
+      where: {
+        organization_id: orgId,
+        OR: [{ type: 'purchase' }, { name: { contains: 'Purchase' } }]
+      }
     });
     const expenseAcc = await prisma.chart_of_accounts.findFirst({
       where: { organization_id: orgId, account_code: '5010' }
@@ -214,22 +217,22 @@ export const convertToBill = async (req, res, next) => {
           journal_id: purchJournal.id,
           entry_number: `JE-${String(jeCount + 1).padStart(3, '0')}`,
           entry_date: new Date(),
-          reference: `${newBill.document_number} (${order.contacts?.display_name})`,
+          partner_id: order.contact_id,
+          reference: `${newBill.document_number} (${order.contacts?.display_name || 'Vendor'})`,
           status: 'posted',
-          posted_at: new Date(),
-          commercial_document_id: newBill.id,
+          total_amount: order.total_amount,
           journal_entry_lines: {
             create: [
               {
-                line_number: 1,
                 account_id: expenseAcc.id,
+                partner_id: order.contact_id,
                 description: 'Raw Materials & Purchase Expense',
                 debit_amount: order.total_amount,
                 credit_amount: 0
               },
               {
-                line_number: 2,
                 account_id: payableAcc.id,
+                partner_id: order.contact_id,
                 description: 'Accounts Payable (Creditors)',
                 debit_amount: 0,
                 credit_amount: order.total_amount
@@ -310,7 +313,10 @@ export const convertToInvoice = async (req, res, next) => {
 
     // 3. Create Automatic Double-Entry in Sales Journal
     const salesJournal = await prisma.journals.findFirst({
-      where: { organization_id: orgId, journal_type: 'sales' }
+      where: {
+        organization_id: orgId,
+        OR: [{ type: 'sales' }, { name: { contains: 'Sales' } }]
+      }
     });
     const receivableAcc = await prisma.chart_of_accounts.findFirst({
       where: { organization_id: orgId, account_code: '1100' }
@@ -327,22 +333,22 @@ export const convertToInvoice = async (req, res, next) => {
           journal_id: salesJournal.id,
           entry_number: `JE-${String(jeCount + 1).padStart(3, '0')}`,
           entry_date: new Date(),
-          reference: `${newInv.document_number} (${order.contacts?.display_name})`,
+          partner_id: order.contact_id,
+          reference: `${newInv.document_number} (${order.contacts?.display_name || 'Customer'})`,
           status: 'posted',
-          posted_at: new Date(),
-          commercial_document_id: newInv.id,
+          total_amount: order.total_amount,
           journal_entry_lines: {
             create: [
               {
-                line_number: 1,
                 account_id: receivableAcc.id,
+                partner_id: order.contact_id,
                 description: 'Accounts Receivable (Debtors)',
                 debit_amount: order.total_amount,
                 credit_amount: 0
               },
               {
-                line_number: 2,
                 account_id: salesAcc.id,
+                partner_id: order.contact_id,
                 description: 'Furniture Sales Income',
                 debit_amount: 0,
                 credit_amount: order.total_amount

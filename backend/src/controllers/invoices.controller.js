@@ -208,16 +208,20 @@ export const payInvoice = async (req, res, next) => {
     const paymentNumber = `PAY-${String(payCount + 1).padStart(3, '0')}`;
     const direction = isCustomer ? 'inbound' : 'outbound';
 
+    const isRazorpay = (paymentMethod || '').toLowerCase().includes('razorpay');
+    const isCash = (paymentMethod || '').toLowerCase().includes('cash');
+    const methodStr = isRazorpay ? 'razorpay' : (isCash ? 'cash' : 'bank_transfer');
+
     const payment = await prisma.payments.create({
       data: {
         organization_id: orgId,
         contact_id: doc.contact_id,
         payment_number: paymentNumber,
         payment_direction: direction,
+        payment_method: methodStr,
         amount: payAmount,
         currency_code: 'INR',
-        payment_date: new Date(),
-        status: 'posted'
+        payment_date: new Date()
       }
     });
 
@@ -225,7 +229,7 @@ export const payInvoice = async (req, res, next) => {
     await prisma.payment_allocations.create({
       data: {
         payment_id: payment.id,
-        document_id: doc.id,
+        commercial_document_id: doc.id,
         allocated_amount: payAmount
       }
     });
@@ -239,9 +243,16 @@ export const payInvoice = async (req, res, next) => {
     });
 
     // 4. Create Double-Entry in Bank/Cash Journal
-    const isCash = paymentMethod.toLowerCase().includes('cash');
     const journalType = isCash ? 'cash' : 'bank';
-    const journal = await prisma.journals.findFirst({ where: { organization_id: orgId, journal_type: journalType } });
+    const journal = await prisma.journals.findFirst({
+      where: {
+        organization_id: orgId,
+        OR: [
+          { type: journalType },
+          { name: { contains: journalType } }
+        ]
+      }
+    });
     const bankOrCashAccCode = isCash ? '1010' : '1020';
     const bankOrCashAcc = await prisma.chart_of_accounts.findFirst({ where: { organization_id: orgId, account_code: bankOrCashAccCode } });
     const offsetAccCode = isCustomer ? '1100' : '2010'; // AR for customer, AP for vendor
@@ -249,29 +260,30 @@ export const payInvoice = async (req, res, next) => {
 
     if (journal && bankOrCashAcc && offsetAcc) {
       const jeCount = await prisma.journal_entries.count({ where: { organization_id: orgId } });
+      const payLabel = isRazorpay ? 'Razorpay Payment Gateway' : (isCash ? 'Cash Payment' : 'Bank Transfer');
       await prisma.journal_entries.create({
         data: {
           organization_id: orgId,
           journal_id: journal.id,
           entry_number: `JE-${String(jeCount + 1).padStart(3, '0')}`,
           entry_date: new Date(),
-          reference: `Payment for ${doc.document_number} (${doc.contacts?.display_name})`,
+          partner_id: doc.contact_id,
+          reference: `${payLabel} for ${doc.document_number} (${doc.contacts?.display_name || 'Customer'})`,
           status: 'posted',
-          posted_at: new Date(),
-          commercial_document_id: doc.id,
+          total_amount: payAmount,
           journal_entry_lines: {
             create: isCustomer
               ? [
                   {
-                    line_number: 1,
                     account_id: bankOrCashAcc.id,
-                    description: bankOrCashAcc.name,
+                    partner_id: doc.contact_id,
+                    description: isRazorpay ? 'Razorpay Payment Received' : bankOrCashAcc.name,
                     debit_amount: payAmount,
                     credit_amount: 0
                   },
                   {
-                    line_number: 2,
                     account_id: offsetAcc.id,
+                    partner_id: doc.contact_id,
                     description: offsetAcc.name,
                     debit_amount: 0,
                     credit_amount: payAmount
@@ -279,15 +291,15 @@ export const payInvoice = async (req, res, next) => {
                 ]
               : [
                   {
-                    line_number: 1,
                     account_id: offsetAcc.id,
+                    partner_id: doc.contact_id,
                     description: offsetAcc.name,
                     debit_amount: payAmount,
                     credit_amount: 0
                   },
                   {
-                    line_number: 2,
                     account_id: bankOrCashAcc.id,
+                    partner_id: doc.contact_id,
                     description: bankOrCashAcc.name,
                     debit_amount: 0,
                     credit_amount: payAmount

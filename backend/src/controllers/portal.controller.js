@@ -64,8 +64,9 @@ export const getPortalData = async (req, res, next) => {
     const formattedPayments = payments.map(p => ({
       id: p.payment_number,
       date: p.payment_date.toISOString().split('T')[0],
-      amount: Number(p.amount),
-      method: p.payment_direction === 'inbound' ? 'Bank Transfer' : 'HDFC Bank',
+      method: p.payment_method === 'razorpay' 
+        ? 'Razorpay (UPI / Cards)' 
+        : (p.payment_method === 'cash' ? 'Cash Receipt' : (p.payment_direction === 'inbound' ? 'Bank Transfer' : 'HDFC Bank Direct')),
       status: 'Completed'
     }));
 

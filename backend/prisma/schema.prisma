@@ -41,6 +41,7 @@ model app_users {
   display_name               String                     @db.VarChar(255)
   phone                      String?                    @db.VarChar(32)
   role                       String                     @default("Administrator") @db.VarChar(64)
+  image_url                  String?                    @db.Text
   is_active                  Boolean                    @default(true)
   created_at                 DateTime                   @default(now())
   updated_at                 DateTime                   @default(now()) @updatedAt

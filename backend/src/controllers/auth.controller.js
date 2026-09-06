@@ -369,6 +369,8 @@ export const getMe = async (req, res, next) => {
         name: user.display_name,
         role: user.role,
         phone: user.phone,
+        avatar: user.image_url,
+        imageUrl: user.image_url,
         organizations: user.organization_memberships.map(m => ({
           id: m.organizations.id,
           name: m.organizations.name,
@@ -391,6 +393,7 @@ export const getUsers = async (req, res, next) => {
         display_name: true,
         phone: true,
         role: true,
+        image_url: true,
         is_active: true,
         created_at: true,
         updated_at: true
@@ -407,6 +410,8 @@ export const getUsers = async (req, res, next) => {
         name: u.display_name,
         phone: u.phone,
         role: u.role,
+        avatar: u.image_url,
+        imageUrl: u.image_url,
         isActive: u.is_active,
         createdAt: u.created_at,
         updatedAt: u.updated_at
