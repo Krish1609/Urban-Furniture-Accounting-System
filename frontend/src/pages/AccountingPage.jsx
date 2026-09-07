@@ -272,7 +272,7 @@ export default function AccountingPage() {
   const isDebitsEqualCredits = Math.abs(totalDebit - totalCredit) < 0.01 && totalDebit > 0;
   const isUnbalanced = Math.abs(totalDebit - totalCredit) >= 0.01 || totalDebit === 0;
 
-  const handlePostJe = (e) => {
+  const handlePostJe = async (e) => {
     if (e) e.preventDefault();
 
     if (isUnbalanced) {
@@ -300,9 +300,13 @@ export default function AccountingPage() {
       })),
     };
 
-    createJournalEntry(newEntry);
-    showToast(`Journal Entry ${entryNumber} posted successfully!`);
-    setJeViewMode('list');
+    try {
+      await createJournalEntry(newEntry);
+      showToast(`Journal Entry ${entryNumber} posted successfully!`);
+      setJeViewMode('list');
+    } catch (err) {
+      showToast(err.message || 'Failed to post journal entry');
+    }
   };
 
   const filteredJournalEntries = (journalEntries || []).filter((je) => {

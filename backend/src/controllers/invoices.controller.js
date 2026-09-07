@@ -110,7 +110,12 @@ export const createInvoice = async (req, res, next) => {
 
     // Auto double entry
     const journalType = isCustomer ? 'sales' : 'purchase';
-    const journal = await prisma.journals.findFirst({ where: { organization_id: orgId, journal_type: journalType } });
+    const journal = await prisma.journals.findFirst({
+      where: {
+        organization_id: orgId,
+        OR: [{ type: journalType }, { name: { contains: isCustomer ? 'Sales' : 'Purchase' } }]
+      }
+    });
     const acc1Code = isCustomer ? '1100' : '5010';
     const acc2Code = isCustomer ? '4010' : '2010';
     const acc1 = await prisma.chart_of_accounts.findFirst({ where: { organization_id: orgId, account_code: acc1Code } });
@@ -124,22 +129,22 @@ export const createInvoice = async (req, res, next) => {
           journal_id: journal.id,
           entry_number: `JE-${String(jeCount + 1).padStart(3, '0')}`,
           entry_date: newDoc.document_date,
+          partner_id: newDoc.contact_id,
           reference: `${newDoc.document_number} (${newDoc.contacts?.display_name})`,
           status: 'posted',
-          posted_at: new Date(),
-          commercial_document_id: newDoc.id,
+          total_amount: totalAmount,
           journal_entry_lines: {
             create: [
               {
-                line_number: 1,
                 account_id: acc1.id,
+                partner_id: newDoc.contact_id,
                 description: acc1.name,
                 debit_amount: totalAmount,
                 credit_amount: 0
               },
               {
-                line_number: 2,
                 account_id: acc2.id,
+                partner_id: newDoc.contact_id,
                 description: acc2.name,
                 debit_amount: 0,
                 credit_amount: totalAmount

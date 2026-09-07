@@ -228,9 +228,14 @@ export function AccountingProvider({ children }) {
 
     setOrders((prev) => [newPO, ...(prev || [])]);
     try {
-      await api.createOrder({ ...newPO, type: 'Purchase' });
+      const res = await api.createOrder({ ...newPO, type: 'Purchase' });
+      if (!res || res.success === false) {
+        throw new Error(res?.message || 'Failed to save Purchase Order to the server');
+      }
     } catch (e) {
       console.error('Error creating Purchase Order:', e);
+      setOrders((prev) => (prev || []).filter((o) => o.id !== newPO.id));
+      throw e;
     }
     return newPO;
   };
@@ -399,9 +404,14 @@ export function AccountingProvider({ children }) {
 
     setOrders((prev) => [newSO, ...(prev || [])]);
     try {
-      await api.createOrder({ ...newSO, type: 'Sale' });
+      const res = await api.createOrder({ ...newSO, type: 'Sale' });
+      if (!res || res.success === false) {
+        throw new Error(res?.message || 'Failed to save Sales Order to the server');
+      }
     } catch (e) {
       console.error('Error creating Sales Order:', e);
+      setOrders((prev) => (prev || []).filter((o) => o.id !== newSO.id));
+      throw e;
     }
     return newSO;
   };
@@ -670,11 +680,16 @@ export function AccountingProvider({ children }) {
     setJournalEntries((prev) => [optimisticObj, ...(prev || [])]);
     try {
       const res = await api.createJournalEntry(entryData);
-      if (res && res.data) {
+      if (!res || res.success === false) {
+        throw new Error(res?.message || 'Failed to save journal entry to the server');
+      }
+      if (res.data) {
         setJournalEntries((prev) => (prev || []).map((je) => (je.id === optimisticObj.id ? res.data : je)));
       }
     } catch (e) {
       console.error('Error creating journal entry:', e);
+      setJournalEntries((prev) => (prev || []).filter((je) => je.id !== optimisticObj.id));
+      throw e;
     }
   };
 

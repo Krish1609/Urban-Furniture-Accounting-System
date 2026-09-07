@@ -99,13 +99,11 @@ export const createOrder = async (req, res, next) => {
         tax_amount: 0,
         total_amount: calculatedTotal,
         commercial_document_lines: {
-          create: items.map((item, index) => ({
-            line_number: index + 1,
+          create: items.map((item) => ({
             product_id: item.productId?.startsWith('prod-') ? null : item.productId || null,
             description: item.productName || 'Order Item',
             quantity: Number(item.qty) || 1,
-            unitPrice: Number(item.unitPrice) || 0,
-            line_subtotal_amount: Number(item.total) || (Number(item.qty || 1) * Number(item.unitPrice || 0)),
+            unit_price: Number(item.unitPrice) || 0,
             line_tax_amount: 0,
             line_total_amount: Number(item.total) || (Number(item.qty || 1) * Number(item.unitPrice || 0))
           }))

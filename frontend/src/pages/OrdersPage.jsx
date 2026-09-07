@@ -323,10 +323,14 @@ export default function OrdersPage() {
       status: 'Confirmed',
       totalAmount: poTotalAmount
     };
-    await createPurchaseOrder(updated);
-    setPoFormData(updated);
-    showToast(`Purchase Order ${poFormData.id} confirmed successfully!`);
-    refreshData();
+    try {
+      await createPurchaseOrder(updated);
+      setPoFormData(updated);
+      showToast(`Purchase Order ${poFormData.id} confirmed successfully!`);
+      refreshData();
+    } catch (e) {
+      showToast(e.message || `Failed to confirm Purchase Order ${poFormData.id}`);
+    }
   };
 
   const handleCreateBillFromPO = async () => {
@@ -683,10 +687,14 @@ export default function OrdersPage() {
       status: 'Confirmed',
       totalAmount: soTotalAmount
     };
-    await createSalesOrder(updated);
-    setSoFormData(updated);
-    showToast(`Sales Order ${soFormData.id} confirmed successfully!`);
-    refreshData();
+    try {
+      await createSalesOrder(updated);
+      setSoFormData(updated);
+      showToast(`Sales Order ${soFormData.id} confirmed successfully!`);
+      refreshData();
+    } catch (e) {
+      showToast(e.message || `Failed to confirm Sales Order ${soFormData.id}`);
+    }
   };
 
   // Flowchart Action: [Create Invoice] on SO -> generates Customer Invoice and redirects

@@ -464,6 +464,12 @@ export const createJournalEntry = async (req, res, next) => {
     if (!targetJournal) {
       targetJournal = await prisma.journals.findFirst({ where: { organization_id: orgId } });
     }
+    if (!targetJournal) {
+      return res.status(400).json({
+        success: false,
+        message: 'No journal found for this organization. Please create a journal before posting entries.'
+      });
+    }
 
     // Resolve Partner (Contact)
     let resolvedPartnerId = partnerId;
@@ -514,15 +520,20 @@ export const createJournalEntry = async (req, res, next) => {
         if (contact) linePartnerId = contact.id;
       }
 
-      if (acc) {
-        lineData.push({
-          account_id: acc.id,
-          partner_id: linePartnerId || null,
-          description: line.accountName || acc.name,
-          debit_amount: Number(line.debit) || 0,
-          credit_amount: Number(line.credit) || 0
+      if (!acc) {
+        return res.status(400).json({
+          success: false,
+          message: `Could not find account "${line.accountName || line.accountCode || line.accountId || 'unknown'}" for line ${i + 1}. Please select a valid account.`
         });
       }
+
+      lineData.push({
+        account_id: acc.id,
+        partner_id: linePartnerId || null,
+        description: line.accountName || acc.name,
+        debit_amount: Number(line.debit) || 0,
+        credit_amount: Number(line.credit) || 0
+      });
     }
 
     const effectiveDate = date || accountingDate ? new Date(date || accountingDate) : new Date();
